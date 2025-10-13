@@ -1,4 +1,4 @@
-package com.luisd.hodler.ui.theme
+package com.luisd.hodler.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

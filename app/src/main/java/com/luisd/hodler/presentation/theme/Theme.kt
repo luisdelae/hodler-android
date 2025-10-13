@@ -1,6 +1,5 @@
-package com.luisd.hodler.ui.theme
+package com.luisd.hodler.presentation.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

@@ -1,4 +1,4 @@
-package com.luisd.hodler.ui.theme
+package com.luisd.hodler.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

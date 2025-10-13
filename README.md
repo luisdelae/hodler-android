@@ -9,7 +9,7 @@ Android cryptocurrency portfolio tracker built with Clean Architecture, Jetpack 
 - Demonstrate **Clean Architecture** with clear separation of concerns
 - Implement **offline-first** strategy with Room + Retrofit
 - Practice **reactive programming** with Kotlin Flow and Coroutines
-- Build **production-ready** patterns for mid-senior level demonstration
+- Build **production-ready** patterns for senior level demonstration
 
 ## Architecture
 
