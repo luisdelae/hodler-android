@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -93,6 +94,9 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // Coil (Image Loading)
+    implementation(libs.coil.compose)
 
     // Testing
     testImplementation(libs.junit)
