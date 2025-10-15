@@ -30,18 +30,18 @@ class CoinRepositoryImpl @Inject constructor(
         emit(Result.Loading)
 
         try {
-            val coinDetails = api.getCoinDetails(coinId)
+            val coinDetails = api.getCoinDetails(coinId = coinId)
             emit(value = Result.Success(data = coinDetails.toDomain()))
         } catch (e: Exception) {
             emit(value = Result.Error(exception = e))
         }
     }
 
-    override fun getMarketChart(coinId: String): Flow<Result<MarketChart>> = flow {
+    override fun getMarketChart(coinId: String, days: Int): Flow<Result<MarketChart>> = flow {
         emit(Result.Loading)
 
         try {
-            val marketChart = api.getCoinMarketChart(coinId)
+            val marketChart = api.getCoinMarketChart(coinId = coinId, days = days.toString())
             emit(value = Result.Success(data = marketChart.toMarketChart()))
         } catch (e: Exception) {
             emit(value = Result.Error(exception = e))

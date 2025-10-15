@@ -19,7 +19,7 @@ interface CoinGeckoApi {
 
     @GET("coins/{coinId}")
     suspend fun getCoinDetails(
-        @Path("id") coinId: String,
+        @Path("coinId") coinId: String,
         @Query("tickers") tickers: Boolean = false,
         @Query("community_date") communityData: Boolean = false,
         @Query("developer_data") developerData: Boolean = false,
@@ -27,7 +27,7 @@ interface CoinGeckoApi {
 
     @GET("coins/{coinId}/market_chart")
     suspend fun getCoinMarketChart(
-        @Path("id") coinId: String,
+        @Path("coinId") coinId: String,
         @Query("vs_currency") currency: String = "usd",
         @Query("days") days: String = "1",
     ): MarketChartDto

@@ -55,17 +55,21 @@ import com.luisd.hodler.domain.model.Coin
 import com.luisd.hodler.domain.model.Result
 import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.theme.getProfitLossColor
+import com.luisd.hodler.presentation.ui.components.ErrorContent
+import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.toUsdFormat
 
 @Composable
 fun MarketRoute(
     viewModel: MarketViewModel = hiltViewModel(),
+    onCoinClick: (String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     MarketScreen(
         state = state,
-        onRefresh = viewModel::refresh
+        onRefresh = viewModel::refresh,
+        onCoinClick = onCoinClick
     )
 }
 
@@ -73,7 +77,7 @@ fun MarketRoute(
 fun MarketScreen(
     state: Result<List<Coin>>,
     onRefresh: () -> Unit,
-    modifier: Modifier = Modifier,
+    onCoinClick: (String) -> Unit,
 ) {
     Scaffold(
         topBar = { TopBar() },
@@ -81,25 +85,26 @@ fun MarketScreen(
     ) { paddingValues ->
         when (state) {
             is Result.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                LoadingContent(
+                    message = "Gathering coins...",
+                    paddingValues = paddingValues
+                )
             }
 
             is Result.Error -> {
                 ErrorContent(
+                    message = "Failed to load coins",
                     paddingValues = paddingValues,
-                    onRefresh = onRefresh
+                    onRefresh = onRefresh,
                 )
             }
 
             is Result.Success -> {
-                CoinList(modifier = Modifier.padding(paddingValues), coins = state.data)
+                CoinList(
+                    modifier = Modifier.padding(paddingValues),
+                    coins = state.data,
+                    onCoinClick = onCoinClick,
+                )
             }
         }
     }
@@ -109,6 +114,7 @@ fun MarketScreen(
 fun CoinList(
     modifier: Modifier,
     coins: List<Coin>,
+    onCoinClick: (String) -> Unit
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize()
@@ -116,7 +122,7 @@ fun CoinList(
         items(coins) { coin ->
             CoinListItem(
                 coin = coin,
-                onClick = { /* TODO: Nav to detail */ })
+                onClick = { onCoinClick(coin.id) })
         }
     }
 }
@@ -271,35 +277,5 @@ fun BottomBar() {
             label = { Text(text = "Portfolio") },
             onClick = { },
         )
-    }
-}
-
-@Composable
-fun ErrorContent(
-    paddingValues: PaddingValues,
-    onRefresh: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            modifier = Modifier.size(48.dp),
-            imageVector = Icons.Default.Error,
-            contentDescription = "Error icon",
-            tint = MaterialTheme.colorScheme.error
-        )
-        Text(
-            text = "Failed to load coins",
-            style = MaterialTheme.typography.titleMedium,
-        )
-        TextButton(
-            onClick = { onRefresh() },
-        ) {
-            Text(text = "Refresh")
-        }
     }
 }

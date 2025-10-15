@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.luisd.hodler.presentation.ui.details.CoinDetailRoute
 import com.luisd.hodler.presentation.ui.market.MarketRoute
 
 @Composable
@@ -16,7 +17,14 @@ fun HodlerNavGraph(
         startDestination = Screen.Market
     ) {
         composable<Screen.Market> {
-            MarketRoute()
+            MarketRoute(
+                onCoinClick = { coinId ->
+                    navController.navigate(Screen.CoinDetail(coinId = coinId))
+                }
+            )
+        }
+        composable<Screen.CoinDetail> { backStackEntry ->
+            CoinDetailRoute(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

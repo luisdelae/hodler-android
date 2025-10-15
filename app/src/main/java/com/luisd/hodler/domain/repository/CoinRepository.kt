@@ -9,5 +9,5 @@ import com.luisd.hodler.domain.model.Result
 interface CoinRepository {
     fun getMarketCoins(): Flow<Result<List<Coin>>>
     fun getCoinDetails(coinId: String): Flow<Result<CoinDetail>>
-    fun getMarketChart(coinId: String): Flow<Result<MarketChart>>
+    fun getMarketChart(coinId: String, days: Int): Flow<Result<MarketChart>>
 }
