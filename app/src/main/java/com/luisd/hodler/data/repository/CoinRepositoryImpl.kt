@@ -1,8 +1,11 @@
 package com.luisd.hodler.data.repository
 
 import com.luisd.hodler.data.mapper.toDomain
+import com.luisd.hodler.data.mapper.toMarketChart
 import com.luisd.hodler.data.remote.api.CoinGeckoApi
 import com.luisd.hodler.domain.model.Coin
+import com.luisd.hodler.domain.model.CoinDetail
+import com.luisd.hodler.domain.model.MarketChart
 import com.luisd.hodler.domain.model.Result
 import com.luisd.hodler.domain.repository.CoinRepository
 import kotlinx.coroutines.flow.Flow
@@ -17,9 +20,31 @@ class CoinRepositoryImpl @Inject constructor(
 
         try {
             val coins = api.getMarketCoins()
-            emit(Result.Success(coins.map { it.toDomain() }))
+            emit(value = Result.Success(data = coins.map { it.toDomain() }))
         } catch (e: Exception) {
-            emit(Result.Error(e))
+            emit(value = Result.Error(exception = e))
+        }
+    }
+
+    override fun getCoinDetails(coinId: String): Flow<Result<CoinDetail>> = flow {
+        emit(Result.Loading)
+
+        try {
+            val coinDetails = api.getCoinDetails(coinId)
+            emit(value = Result.Success(data = coinDetails.toDomain()))
+        } catch (e: Exception) {
+            emit(value = Result.Error(exception = e))
+        }
+    }
+
+    override fun getMarketChart(coinId: String): Flow<Result<MarketChart>> = flow {
+        emit(Result.Loading)
+
+        try {
+            val marketChart = api.getCoinMarketChart(coinId)
+            emit(value = Result.Success(data = marketChart.toMarketChart()))
+        } catch (e: Exception) {
+            emit(value = Result.Error(exception = e))
         }
     }
 }

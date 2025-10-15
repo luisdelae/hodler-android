@@ -5,6 +5,6 @@ data class MarketChart(
 )
 
 data class PricePoint(
-    val timeStamp: Long,
+    val timestamp: Long,
     val price: Double,
 )
