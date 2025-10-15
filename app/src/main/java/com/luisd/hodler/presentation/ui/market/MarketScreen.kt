@@ -62,7 +62,7 @@ import com.luisd.hodler.presentation.ui.toUsdFormat
 @Composable
 fun MarketRoute(
     viewModel: MarketViewModel = hiltViewModel(),
-    onCoinClick: (String) -> Unit,
+    onCoinClick: (String, String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -77,7 +77,7 @@ fun MarketRoute(
 fun MarketScreen(
     state: Result<List<Coin>>,
     onRefresh: () -> Unit,
-    onCoinClick: (String) -> Unit,
+    onCoinClick: (String, String) -> Unit,
 ) {
     Scaffold(
         topBar = { TopBar() },
@@ -114,7 +114,7 @@ fun MarketScreen(
 fun CoinList(
     modifier: Modifier,
     coins: List<Coin>,
-    onCoinClick: (String) -> Unit
+    onCoinClick: (String, String) -> Unit
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize()
@@ -122,7 +122,7 @@ fun CoinList(
         items(coins) { coin ->
             CoinListItem(
                 coin = coin,
-                onClick = { onCoinClick(coin.id) })
+                onClick = { onCoinClick(coin.id, coin.symbol) })
         }
     }
 }

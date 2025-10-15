@@ -18,8 +18,12 @@ fun HodlerNavGraph(
     ) {
         composable<Screen.Market> {
             MarketRoute(
-                onCoinClick = { coinId ->
-                    navController.navigate(Screen.CoinDetail(coinId = coinId))
+                onCoinClick = { coinId, coinSymbol ->
+                    navController.navigate(
+                        Screen.CoinDetail(
+                            coinId = coinId,
+                            coinSymbol = coinSymbol)
+                    )
                 }
             )
         }

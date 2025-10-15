@@ -22,7 +22,9 @@ class CoinDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val coinId: String = savedStateHandle.toRoute<Screen.CoinDetail>().coinId
+    private val args = savedStateHandle.toRoute<Screen.CoinDetail>()
+    private val coinId: String = args.coinId
+    val coinSymbol: String = args.coinSymbol
 
     private val _state = MutableStateFlow<CoinDetailUiState>(Loading)
     val state: StateFlow<CoinDetailUiState> = _state.asStateFlow()
@@ -61,7 +63,8 @@ class CoinDetailViewModel @Inject constructor(
                             is Result.Error -> ChartState.Error(result.exception.message ?: "Chart error")
                             Result.Loading -> ChartState.Loading
                             is Result.Success<*> -> ChartState.Success(result.data as MarketChart)
-                        }
+                        },
+                        timeRange = timeRange
                     )
                     else -> currentState // No update
                 }

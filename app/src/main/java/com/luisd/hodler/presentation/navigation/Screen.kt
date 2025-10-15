@@ -7,6 +7,7 @@ sealed interface Screen {
     data object Market : Screen
     @Serializable
     data class CoinDetail(
-        val coinId: String
+        val coinId: String,
+        val coinSymbol: String,
     ) : Screen
 }
