@@ -117,7 +117,9 @@ fun CoinList(
     onCoinClick: (String, String) -> Unit
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxSize()
     ) {
         items(coins) { coin ->
             CoinListItem(
@@ -134,7 +136,7 @@ fun CoinListItem(
 ) {
     Card(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(vertical = 4.dp),
         elevation = CardDefaults.cardElevation(2.dp),
         onClick = onClick,
         colors = CardDefaults.cardColors(

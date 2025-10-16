@@ -2,6 +2,7 @@ package com.luisd.hodler.presentation.ui.details
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,8 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.StarBorder
@@ -27,6 +32,7 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -47,6 +53,8 @@ import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.theme.getProfitLossColor
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
+import com.luisd.hodler.presentation.ui.toCompactFormat
+import com.luisd.hodler.presentation.ui.toPercentageFormat
 import com.luisd.hodler.presentation.ui.toUsdFormat
 
 @Composable
@@ -130,7 +138,7 @@ fun DetailScreen(
 
                     MarketChartArea(state = state.chartState, paddingValues = paddingValues)
 
-                    StatsGrid(coinDetails = state.coinDetail, modifier = Modifier)
+                    StatsGrid(coinDetail = state.coinDetail)
                 }
             }
         }
@@ -143,7 +151,7 @@ fun CoinDetail(
 ) {
     Card(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -154,7 +162,7 @@ fun CoinDetail(
                 .fillMaxWidth()
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),  // Increase spacing
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -166,42 +174,50 @@ fun CoinDetail(
                     .size(40.dp)
                     .clip(CircleShape),
             )
-            Column(modifier = Modifier.weight(1f)) {
+
+            Column(
+                modifier = Modifier.weight(1.5f),
+            ) {
                 Text(
                     text = coinDetails.name,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = coinDetails.currentPrice.toUsdFormat(),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
-            Column(modifier = Modifier.weight(.5f)) {
+
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.End,
+            ) {
                 Text(
                     text = coinDetails.symbol.uppercase(),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "[ ${if (coinDetails.priceChangePercentage24h > 0) "+" else ""} " +
-                            "${coinDetails.priceChangePercentage24h}% ]",
+                    text = coinDetails.priceChangePercentage24h.toPercentageFormat(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = getProfitLossColor(coinDetails.priceChangePercentage24h),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
                 )
             }
-            Text(
-                modifier = Modifier.weight(.5f),
-                text = "Rank ${coinDetails.marketCapRank}",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                Text(
+                    text = "#${coinDetails.marketCapRank}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+            }
         }
     }
 }
@@ -218,9 +234,9 @@ fun CoinDetailPreview() {
                 symbol = "btc",
                 image = "",
                 currentPrice = 150121.50,
-                priceChangePercentage24h = 2.5,
+                priceChangePercentage24h = -2.545245,
                 marketCapUsd = 845000000000.0,
-                marketCapRank = 1,
+                marketCapRank = 551,
                 totalVolumeUsd = 1.1,
                 circulatingSupply = 1.0,
                 allTimeHighUsd = 468744.1,
@@ -274,19 +290,23 @@ fun MarketChartArea(
     state: ChartState,
     paddingValues: PaddingValues,
 ) {
-    when (state) {
-        is ChartState.Error -> ErrorContent(
-            message = state.message,
-            paddingValues = paddingValues,
-            onRefresh = { },
-        )
+    Box(
+        modifier = Modifier.height(300.dp)
+    ) {
+        when (state) {
+            is ChartState.Error -> ErrorContent(
+                message = state.message,
+                paddingValues = paddingValues,
+                onRefresh = { },
+            )
 
-        ChartState.Loading -> LoadingContent(
-            message = "Loading market chart...",
-            paddingValues = paddingValues,
-        )
+            ChartState.Loading -> LoadingContent(
+                message = "Loading market chart...",
+                paddingValues = paddingValues,
+            )
 
-        is ChartState.Success -> {}
+            is ChartState.Success -> {}
+        }
     }
 }
 
@@ -336,62 +356,32 @@ fun StatCardPreview() {
     }
 }
 
+data class Stat(val label: String, val value: String)
+
 @Composable
 fun StatsGrid(
-    coinDetails: CoinDetail,
-    modifier: Modifier = Modifier,
+    coinDetail: CoinDetail,
 ) {
-    Column(modifier = modifier
-        .fillMaxWidth()
-        .padding(16.dp),
+    val stats = listOf(
+        Stat("Market Cap", coinDetail.marketCapUsd.toCompactFormat()),
+        Stat("Volume (24h)", coinDetail.totalVolumeUsd.toCompactFormat()),
+        Stat(
+            "Circulating",
+            "${coinDetail.circulatingSupply.toCompactFormat()} ${coinDetail.symbol.uppercase()}"
+        ),
+        Stat("Max Supply", coinDetail.maxSupply?.toCompactFormat() ?: "Unlimited"),
+        Stat("ATH", coinDetail.allTimeHighUsd.toUsdFormat()),
+        Stat("ATL", coinDetail.allTimeLowUsd.toUsdFormat()),
+    )
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            StatCard(
-                label = "Market Cap",
-                value = coinDetails.marketCapUsd.toString(), // Need to make this compact
-                modifier = Modifier.weight(1f)
-            )
-            StatCard(
-                label = "Volume (24h)",
-                value = coinDetails.totalVolumeUsd.toString(), // Need to make this compact
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            StatCard(
-                label = "Circulating Supply",
-                value = "${coinDetails.circulatingSupply} ${coinDetails.symbol.uppercase()}", // Need to make this compact
-                modifier = Modifier.weight(1f),
-            )
-            StatCard(
-                label = "Max Supply",
-                value = coinDetails.maxSupply?.let {
-                    "${it} ${coinDetails.symbol.uppercase()}" // Need to make this compact
-                } ?: "Unlimited",
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            StatCard(
-                label = "All-Time High",
-                value = coinDetails.allTimeHighUsd.toUsdFormat(),
-                modifier = Modifier.weight(1f),
-            )
-            StatCard(
-                label = "All-Time Low",
-                value = coinDetails.allTimeLowUsd.toUsdFormat(),
-                modifier = Modifier.weight(1f),
-            )
+        items(stats) { stat ->
+            StatCard(label = stat.label, value = stat.value)
         }
     }
 }
@@ -402,7 +392,7 @@ fun StatsGrid(
 fun StatsGridPreview() {
     HodlerTheme {
         StatsGrid(
-            coinDetails = CoinDetail(
+            coinDetail = CoinDetail(
                 id = "bitcoin",
                 name = "Bitcoin but the name is long",
                 symbol = "btc",

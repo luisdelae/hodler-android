@@ -19,3 +19,16 @@ fun Double.toUsdFormat(): String {
         }
     }
 }
+
+fun Number.toCompactFormat() = when {
+    toDouble() >= 1e12 -> "%.2fT".format(toDouble() / 1e12)
+    toDouble() >= 1e9 -> "%.2fB".format(toDouble() / 1e9)
+    toDouble() >= 1e6 -> "%.2fM".format(toDouble() / 1e6)
+    toDouble() >= 1e3 -> "%.2fK".format(toDouble() / 1e3)
+    else -> "%.2f".format(toDouble())
+}
+
+fun Double.toPercentageFormat(): String {
+    val sign = if (this >= 0) "+" else ""
+    return "$sign${"%.4f".format(this)}%"
+}
