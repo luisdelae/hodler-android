@@ -47,7 +47,6 @@ fun CoinDetailChartSection(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-//            .height(300.dp)
             .padding(16.dp)
     ) {
         when (state) {

@@ -65,7 +65,7 @@ fun DetailScreen(
             CenterAlignedTopAppBar(
                 title = { Text(text = coinSymbol.uppercase()) },
                 navigationIcon = {
-                    TextButton(onClick = { onNavigateBack }) {
+                    TextButton(onClick = { onNavigateBack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
