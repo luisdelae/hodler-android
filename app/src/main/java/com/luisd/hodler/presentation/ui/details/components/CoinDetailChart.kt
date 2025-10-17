@@ -1,10 +1,16 @@
-package com.luisd.hodler.presentation.ui.components
+package com.luisd.hodler.presentation.ui.details.components
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -12,6 +18,9 @@ import androidx.compose.ui.unit.sp
 import com.luisd.hodler.domain.model.MarketChart
 import com.luisd.hodler.domain.model.PricePoint
 import com.luisd.hodler.presentation.theme.HodlerTheme
+import com.luisd.hodler.presentation.ui.components.ErrorContent
+import com.luisd.hodler.presentation.ui.components.LoadingContent
+import com.luisd.hodler.presentation.ui.details.ChartState
 import com.luisd.hodler.presentation.ui.details.TimeRange
 import com.luisd.hodler.presentation.ui.util.getMockPriceData
 import com.luisd.hodler.presentation.ui.util.timeStampChartFormat
@@ -30,7 +39,41 @@ import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import kotlinx.coroutines.runBlocking
 
 @Composable
-private fun MarketLineChart(
+fun CoinDetailChartSection(
+    state: ChartState,
+    paddingValues: PaddingValues,
+    timeRange: TimeRange,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+//            .height(300.dp)
+            .padding(16.dp)
+    ) {
+        when (state) {
+            is ChartState.Error -> ErrorContent(
+                message = state.message,
+                paddingValues = paddingValues,
+                onRefresh = { },
+            )
+
+            ChartState.Loading -> LoadingContent(
+                message = "Loading market chart...",
+                paddingValues = paddingValues,
+            )
+
+            is ChartState.Success -> {
+                CoinDetailLineChart(
+                    data = state.chart,
+                    timeRange = timeRange,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CoinDetailLineChartContent(
     modelProducer: CartesianChartModelProducer,
     prices: List<PricePoint>,
     timeRange: TimeRange,
@@ -58,6 +101,7 @@ private fun MarketLineChart(
                     ),
                     valueFormatter = { _, value, _ ->
                         when {
+                            value >= 1_000_000 -> "$%.0fM".format(value / 1_000_000)
                             value >= 1_000 -> "$%.0fK".format(value / 1_000)
                             value >= 0.01 -> "$%.2f".format(value)
                             value >= 0.00001 -> "$%.5f".format(value)
@@ -97,14 +141,24 @@ private fun MarketLineChart(
 }
 
 @Composable
-fun MarketLineChart(
+fun CoinDetailLineChart(
     data: MarketChart,
     timeRange: TimeRange,
     modifier: Modifier = Modifier
 ) {
+    if (data.prices.isEmpty()) {
+        ErrorContent(
+            message = "No data to display",
+            paddingValues = PaddingValues(0.dp)
+        ) { }
+        return
+    }
+
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    val displayPrices = remember(data.prices) {
+    var chartError by remember { mutableStateOf<String?>(null) }
+
+    val displayPrices = remember(data.prices, timeRange) {
         val maxPoints = when (timeRange) {
             TimeRange.DAY_1 -> 48
             TimeRange.DAY_7 -> 84
@@ -122,17 +176,37 @@ fun MarketLineChart(
         }
     }
 
-    LaunchedEffect(Unit) {
-        modelProducer.runTransaction {
-            lineSeries {
-                series(
-                    x = displayPrices.indices.map { it.toFloat() },
-                    y = displayPrices.map { it.price },
-                )
+    LaunchedEffect(displayPrices) {
+        chartError = null
+
+        try {
+            modelProducer.runTransaction {
+                lineSeries {
+                    series(
+                        x = displayPrices.indices.map { it.toFloat() },
+                        y = displayPrices.map { it.price },
+                    )
+                }
             }
+        } catch (e: Exception) {
+            chartError = "Failed to load chart"
+            // TODO: Log after Trimber impl
         }
     }
-    MarketLineChart(modelProducer, displayPrices, timeRange, modifier)
+
+    if (chartError != null) {
+        ErrorContent(
+            message = chartError!!,
+            paddingValues = PaddingValues(0.dp)
+        ) { }
+    } else {
+        CoinDetailLineChartContent(
+            modelProducer = modelProducer,
+            prices = displayPrices,
+            timeRange = timeRange,
+            modifier = modifier,
+        )
+    }
 }
 
 @Preview(name = "Light", showBackground = true)
@@ -153,7 +227,7 @@ private fun Preview24h() {
         }
     }
     HodlerTheme {
-        MarketLineChart(modelProducer, data, timeRange)
+        CoinDetailLineChartContent(modelProducer, data, timeRange)
     }
 }
 
@@ -193,6 +267,6 @@ private fun Preview30d() {
         }
     }
     HodlerTheme {
-        MarketLineChart(modelProducer, displayPrices, timeRange)
+        CoinDetailLineChartContent(modelProducer, displayPrices, timeRange)
     }
 }

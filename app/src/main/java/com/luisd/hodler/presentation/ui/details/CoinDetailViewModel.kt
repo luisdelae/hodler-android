@@ -8,7 +8,9 @@ import com.luisd.hodler.domain.model.MarketChart
 import com.luisd.hodler.domain.model.Result
 import com.luisd.hodler.domain.repository.CoinRepository
 import com.luisd.hodler.presentation.navigation.Screen
-import com.luisd.hodler.presentation.ui.details.CoinDetailUiState.*
+import com.luisd.hodler.presentation.ui.details.CoinDetailUiState.Error
+import com.luisd.hodler.presentation.ui.details.CoinDetailUiState.Loading
+import com.luisd.hodler.presentation.ui.details.CoinDetailUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,8 +40,9 @@ class CoinDetailViewModel @Inject constructor(
             repository.getCoinDetails(coinId).collect { result ->
                 when (result) {
                     is Result.Error -> {
-                        _state.value = Error(result.exception.message  ?: "Unknown error")
+                        _state.value = Error(result.exception.message ?: "Unknown error")
                     }
+
                     Result.Loading -> _state.value = Loading
                     is Result.Success -> {
                         _state.value = Success(
@@ -60,12 +63,16 @@ class CoinDetailViewModel @Inject constructor(
                 _state.value = when (val currentState = _state.value) {
                     is Success -> currentState.copy(
                         chartState = when (result) {
-                            is Result.Error -> ChartState.Error(result.exception.message ?: "Chart error")
+                            is Result.Error -> ChartState.Error(
+                                result.exception.message ?: "Chart error"
+                            )
+
                             Result.Loading -> ChartState.Loading
                             is Result.Success<*> -> ChartState.Success(result.data as MarketChart)
                         },
                         timeRange = timeRange
                     )
+
                     else -> currentState // No update
                 }
             }
@@ -74,5 +81,12 @@ class CoinDetailViewModel @Inject constructor(
 
     fun updateTimeRange(timeRange: TimeRange) {
         loadMarketData(timeRange)
+    }
+
+    fun addToPortfolio(coinId: String) {
+        viewModelScope.launch {
+            /** Implement add to portfolio **/
+
+        }
     }
 }
