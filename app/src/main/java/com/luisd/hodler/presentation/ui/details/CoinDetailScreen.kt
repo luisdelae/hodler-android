@@ -36,7 +36,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,13 +51,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.luisd.hodler.domain.model.CoinDetail
+import com.luisd.hodler.domain.model.MarketChart
 import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.theme.getProfitLossColor
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
-import com.luisd.hodler.presentation.ui.toCompactFormat
-import com.luisd.hodler.presentation.ui.toPercentageFormat
-import com.luisd.hodler.presentation.ui.toUsdFormat
+import com.luisd.hodler.presentation.ui.components.MarketLineChart
+import com.luisd.hodler.presentation.ui.util.toCompactFormat
+import com.luisd.hodler.presentation.ui.util.toPercentageFormat
+import com.luisd.hodler.presentation.ui.util.toUsdFormat
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 
 @Composable
 fun CoinDetailRoute(
@@ -127,7 +140,7 @@ fun DetailScreen(
                     modifier = Modifier
                         .padding(paddingValues)
                         .fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     CoinDetail(coinDetails = state.coinDetail)
 
@@ -136,7 +149,11 @@ fun DetailScreen(
                         onSelectedTimeRangeChange = onSelectedTimeRangeChange
                     )
 
-                    MarketChartArea(state = state.chartState, paddingValues = paddingValues)
+                    MarketChartArea(
+                        state = state.chartState,
+                        paddingValues = paddingValues,
+                        timeRange = state.timeRange
+                    )
 
                     StatsGrid(coinDetail = state.coinDetail)
                 }
@@ -162,7 +179,7 @@ fun CoinDetail(
                 .fillMaxWidth()
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),  // Increase spacing
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -289,9 +306,13 @@ fun TimeRangeChipsPreview() {
 fun MarketChartArea(
     state: ChartState,
     paddingValues: PaddingValues,
+    timeRange: TimeRange
 ) {
     Box(
-        modifier = Modifier.height(300.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .padding(16.dp)
     ) {
         when (state) {
             is ChartState.Error -> ErrorContent(
@@ -305,7 +326,12 @@ fun MarketChartArea(
                 paddingValues = paddingValues,
             )
 
-            is ChartState.Success -> {}
+            is ChartState.Success -> {
+                MarketLineChart(
+                    data = state.chart,
+                    timeRange = timeRange,
+                )
+            }
         }
     }
 }

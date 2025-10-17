@@ -24,8 +24,8 @@ Android cryptocurrency portfolio tracker built with Clean Architecture, Jetpack 
 ## Features
 
 ### Implemented
-- [ ] Market overview (top cryptocurrencies)
-- [ ] Coin detail with price charts
+- [x] Market overview (top cryptocurrencies)
+- [x] Coin detail with price charts
 - [ ] Portfolio tracking with holdings
 - [ ] Offline-first caching
 - [ ] Search functionality

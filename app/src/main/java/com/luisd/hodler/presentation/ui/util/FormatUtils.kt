@@ -1,6 +1,10 @@
-package com.luisd.hodler.presentation.ui
+package com.luisd.hodler.presentation.ui.util
 
 import android.annotation.SuppressLint
+import com.luisd.hodler.presentation.ui.details.TimeRange
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("DefaultLocale")
 fun Double.toUsdFormat(): String {
@@ -31,4 +35,15 @@ fun Number.toCompactFormat() = when {
 fun Double.toPercentageFormat(): String {
     val sign = if (this >= 0) "+" else ""
     return "$sign${"%.4f".format(this)}%"
+}
+
+fun Long.timeStampChartFormat(timeRange: TimeRange): String {
+    val date = Date(this)
+    val format = when (timeRange) {
+        TimeRange.DAY_1 -> SimpleDateFormat("h:mm a", Locale.getDefault())
+        TimeRange.DAY_7 -> SimpleDateFormat("EEE h a", Locale.getDefault())
+        TimeRange.DAY_30 -> SimpleDateFormat("MMM d", Locale.getDefault())
+        TimeRange.YEAR_1 -> SimpleDateFormat("MMM", Locale.getDefault())
+    }
+    return format.format(date)
 }
