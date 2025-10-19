@@ -103,8 +103,14 @@ dependencies {
     implementation(libs.vico.compose.m3)
     implementation(libs.vico.core)
 
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     // Testing
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.room.testing)
 
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
