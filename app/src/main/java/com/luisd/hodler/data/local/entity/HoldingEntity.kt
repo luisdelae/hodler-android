@@ -5,7 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "holdings")
 data class HoldingEntity(
-    @PrimaryKey val id: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long,
     val coinId: String,
     val coinSymbol: String,
     val coinName: String,

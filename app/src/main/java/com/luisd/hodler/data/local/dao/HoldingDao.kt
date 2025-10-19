@@ -19,11 +19,11 @@ interface HoldingDao {
     fun getHoldingsByCoinId(coinId: String): Flow<List<HoldingEntity>>
 
     @Insert(onConflict = REPLACE)
-    fun insertHolding(holdingEntity: HoldingEntity)
+    fun insertHolding(holdingEntity: HoldingEntity): Long
 
     @Query("DELETE FROM holdings WHERE id = :id")
-    fun deleteHoldingById(id: String)
+    fun deleteHoldingById(id: String): Int
 
     @Query("DELETE FROM holdings")
-    fun deleteAllHoldings()
+    fun deleteAllHoldings(): Int
 }
