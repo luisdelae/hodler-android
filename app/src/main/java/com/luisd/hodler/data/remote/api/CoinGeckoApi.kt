@@ -32,6 +32,20 @@ interface CoinGeckoApi {
         @Query("days") days: String = "1",
     ): MarketChartDto
 
+    /**
+     * This is a different one from the standard pattern
+     * Response: {"bitcoin": {"usd": 14012.58}, "ethereum": {"usd": 4012.58}}
+     */
+    @GET("simple/price")
+    suspend fun getCurrentPrices(
+        @Query("vs_currency") currency: String = "usd",
+        @Query("ids") coinIds: String,
+        @Query("include_market_cap") includeMarketCap: Boolean = false,
+        @Query("include_24hr_vol") include24hVol: Boolean = false,
+        @Query("include_24hr_change") include24hChange: Boolean = false,
+        @Query("include_last_updated_at") includeLastUpdatedAt: Boolean = false,
+    ): Map<String, Map<String, Double>>
+
     companion object {
         const val BASE_URL = "https://api.coingecko.com/api/v3/"
     }
