@@ -6,6 +6,7 @@ import com.luisd.hodler.data.remote.api.CoinGeckoApi
 import com.luisd.hodler.domain.model.Coin
 import com.luisd.hodler.domain.model.CoinDetail
 import com.luisd.hodler.domain.model.MarketChart
+import com.luisd.hodler.domain.model.PriceData
 import com.luisd.hodler.domain.model.Result
 import com.luisd.hodler.domain.repository.CoinRepository
 import kotlinx.coroutines.flow.Flow
@@ -49,13 +50,13 @@ class CoinRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCurrentPrices(coinIds: List<String>): Result<Map<String, Double>> {
+    override suspend fun getCurrentPrices(coinIds: List<String>): Result<Map<String, PriceData>> {
         return try {
             val idsParam = coinIds.joinToString(",")
             val response = api.getCurrentPrices(coinIds = idsParam)
 
             val prices = response.mapValues { (_, currencies) ->
-                currencies["usd"] ?: 0.0
+                currencies.toDomain()
             }
 
             Result.Success(prices)

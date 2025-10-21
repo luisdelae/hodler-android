@@ -1,7 +1,9 @@
 package com.luisd.hodler.data.mapper
 
 import com.luisd.hodler.data.remote.dto.CoinDetailDto
+import com.luisd.hodler.data.remote.dto.PriceDataDto
 import com.luisd.hodler.domain.model.CoinDetail
+import com.luisd.hodler.domain.model.PriceData
 
 private const val USD: String = "usd"
 
@@ -23,5 +25,12 @@ fun CoinDetailDto.toDomain(): CoinDetail {
         allTimeHighUsdDate = marketData.allTimeHighDate[USD] ?: "",
         allTimeLowUsd = marketData.allTimeLow[USD] ?: 0.0,
         allTimeLowUsdDate = marketData.allTimeLowDate[USD] ?: ""
+    )
+}
+
+fun PriceDataDto.toDomain(): PriceData {
+    return PriceData(
+        usd = usd,
+        usd24hChange = usd24hChange
     )
 }

@@ -10,4 +10,6 @@ sealed interface Screen {
         val coinId: String,
         val coinSymbol: String,
     ) : Screen
+    @Serializable
+    data object Portfolio : Screen
 }

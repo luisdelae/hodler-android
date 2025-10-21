@@ -29,7 +29,7 @@ import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.details.components.CoinDetailCard
 import com.luisd.hodler.presentation.ui.details.components.CoinDetailChartSection
-import com.luisd.hodler.presentation.ui.details.components.StatsGrid
+import com.luisd.hodler.presentation.ui.details.components.CoinDetailStatsSection
 import com.luisd.hodler.presentation.ui.details.components.TimeRangeChips
 
 @Composable
@@ -122,7 +122,7 @@ fun DetailScreen(
                         timeRange = state.timeRange
                     )
 
-                    StatsGrid(coinDetail = state.coinDetail)
+                    CoinDetailStatsSection(coinDetail = state.coinDetail)
 
                     TextButton(
                         onClick = { onAddToPortfolio(state.coinDetail.id) },

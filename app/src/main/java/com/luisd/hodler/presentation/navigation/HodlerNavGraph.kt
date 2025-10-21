@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.luisd.hodler.presentation.ui.details.CoinDetailRoute
 import com.luisd.hodler.presentation.ui.market.MarketRoute
+import com.luisd.hodler.presentation.ui.portfolio.PortfolioRoute
 
 @Composable
 fun HodlerNavGraph(
@@ -29,6 +30,14 @@ fun HodlerNavGraph(
         }
         composable<Screen.CoinDetail> { backStackEntry ->
             CoinDetailRoute(onNavigateBack = { navController.popBackStack() })
+        }
+        composable<Screen.Portfolio> { backStackEntry ->
+            PortfolioRoute(
+                onAddHoldingClick = {
+                // TODO: Add when holding screen is created
+                },
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

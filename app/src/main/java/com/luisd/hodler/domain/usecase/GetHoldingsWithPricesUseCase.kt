@@ -29,16 +29,34 @@ class GetHoldingsWithPricesUseCase @Inject constructor(
                             }
 
                         val holdingsWithPrices = holdings.map { holding ->
-                            val currentPrice = pricesMap[holding.coinId] ?: 0.0
+                            val priceInfo = pricesMap[holding.coinId]
+                            val currentPrice = priceInfo?.usd ?: 0.0
+                            val usd24hChange = priceInfo?.usd24hChange ?: 0.0
+
                             val currentValue = currentPrice * holding.amount
                             val purchaseValue = holding.purchasePrice * holding.amount
+
+                            val price24hAgo = if (usd24hChange != 0.0) {
+                                currentPrice / (1 + (usd24hChange / 100))
+                            } else {
+                                currentPrice
+                            }
+
+                            val profitLoss = currentValue - purchaseValue
+                            val profitLossPercent = (profitLoss / purchaseValue) * 100
+
+                            val profitLoss24h = (currentPrice - price24hAgo) * holding.amount
+                            val profitLoss24hPercent = ((currentPrice - price24hAgo) / price24hAgo) * 100
 
                             HoldingWithPrice(
                                 holding = holding,
                                 currentPrice = currentPrice,
                                 currentValue = currentValue,
-                                profitLoss = currentValue - purchaseValue,
-                                profitLossPercent = currentValue / purchaseValue * 100
+                                costBasis = purchaseValue,
+                                profitLoss = profitLoss,
+                                profitLossPercent = profitLossPercent,
+                                profitLoss24h = profitLoss24h,
+                                profitLossPercent24h = profitLoss24hPercent
                             )
                         }
 

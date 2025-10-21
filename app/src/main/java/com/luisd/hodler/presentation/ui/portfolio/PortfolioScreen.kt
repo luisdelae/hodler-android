@@ -1,20 +1,23 @@
-package com.luisd.hodler.presentation.ui.market
+package com.luisd.hodler.presentation.ui.portfolio
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,85 +25,79 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.Navigation
-import com.luisd.hodler.domain.model.Coin
-import com.luisd.hodler.domain.model.Result
+import com.luisd.hodler.domain.model.HoldingWithPrice
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
-import com.luisd.hodler.presentation.ui.market.components.CoinList
+import com.luisd.hodler.domain.model.Result
 
 @Composable
-fun MarketRoute(
-    viewModel: MarketViewModel = hiltViewModel(),
-    onCoinClick: (String, String) -> Unit,
+fun PortfolioRoute(
+    viewModel: PortfolioViewModel = hiltViewModel(),
+    onAddHoldingClick: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    MarketScreen(
-        state = state,
-        onRefresh = viewModel::refresh,
-        onCoinClick = onCoinClick
-    )
 }
 
 @Composable
-fun MarketScreen(
-    state: Result<List<Coin>>,
+fun PortfolioScreen(
+    state: Result<List<HoldingWithPrice>>,
     onRefresh: () -> Unit,
-    onCoinClick: (String, String) -> Unit,
+    onAddHoldingClick: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     Scaffold(
-        topBar = { TopBar() },
-        bottomBar = { BottomBar() }
+        topBar = { TopBar(onNavigateBack) },
+        bottomBar = { BottomBar() },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onAddHoldingClick() }
+            ) {
+
+            }
+        }
     ) { paddingValues ->
         when (state) {
             is Result.Loading -> {
                 LoadingContent(
-                    message = "Gathering coins...",
+                    message = "Loading portfolio...",
                     paddingValues = paddingValues
                 )
             }
 
             is Result.Error -> {
                 ErrorContent(
-                    message = "Failed to load coins",
+                    message = "Failed to load portfolio",
                     paddingValues = paddingValues,
                     onRefresh = onRefresh,
                 )
             }
 
             is Result.Success -> {
-                CoinList(
-                    modifier = Modifier.padding(paddingValues),
-                    coins = state.data,
-                    onCoinClick = onCoinClick,
-                )
+
             }
         }
     }
 }
 
-// TODO: Placeholder at the moment.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(
+    onNavigateBack: () -> Unit
+) {
     TopAppBar(
-        title = { Text(text = "Market") },
-        actions = {
-            IconButton(
-                onClick = { }
-            ) {
-                Icon(Icons.Filled.Search, contentDescription = "Search")
+        title = { Text(text = "Portfolio") },
+        navigationIcon = {
+            TextButton(onClick = { onNavigateBack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                )
+                Text(text = "Back")
             }
-            IconButton(
-                onClick = { }
-            ) {
-                Icon(Icons.Filled.Settings, contentDescription = "Settings")
-            }
-        }
+        },
     )
 }
-
 
 // TODO: Placeholder at the moment.
 @Composable
@@ -109,7 +106,7 @@ fun BottomBar() {
         modifier = Modifier.height(80.dp)
     ) {
         NavigationBarItem(
-            selected = true,
+            selected = false,
             icon = {
                 Icon(
                     imageVector = Icons.Filled.Home,
@@ -131,7 +128,7 @@ fun BottomBar() {
             onClick = { },
         )
         NavigationBarItem(
-            selected = false,
+            selected = true,
             icon = {
                 Icon(
                     imageVector = Icons.Filled.ShoppingBag,
@@ -139,9 +136,7 @@ fun BottomBar() {
                 )
             },
             label = { Text(text = "Portfolio") },
-            onClick = {
-
-            },
+            onClick = { },
         )
     }
 }

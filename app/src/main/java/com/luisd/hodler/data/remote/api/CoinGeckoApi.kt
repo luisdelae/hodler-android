@@ -3,6 +3,7 @@ package com.luisd.hodler.data.remote.api
 import com.luisd.hodler.data.remote.dto.CoinDetailDto
 import com.luisd.hodler.data.remote.dto.CoinDto
 import com.luisd.hodler.data.remote.dto.MarketChartDto
+import com.luisd.hodler.data.remote.dto.PriceDataDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -33,8 +34,7 @@ interface CoinGeckoApi {
     ): MarketChartDto
 
     /**
-     * This is a different one from the standard pattern
-     * Response: {"bitcoin": {"usd": 14012.58}, "ethereum": {"usd": 4012.58}}
+     * This is a different one from the standard pattern as the parent object name is variable
      */
     @GET("simple/price")
     suspend fun getCurrentPrices(
@@ -42,9 +42,9 @@ interface CoinGeckoApi {
         @Query("ids") coinIds: String,
         @Query("include_market_cap") includeMarketCap: Boolean = false,
         @Query("include_24hr_vol") include24hVol: Boolean = false,
-        @Query("include_24hr_change") include24hChange: Boolean = false,
+        @Query("include_24hr_change") include24hChange: Boolean = true,
         @Query("include_last_updated_at") includeLastUpdatedAt: Boolean = false,
-    ): Map<String, Map<String, Double>>
+    ): Map<String, PriceDataDto>
 
     companion object {
         const val BASE_URL = "https://api.coingecko.com/api/v3/"
