@@ -5,47 +5,66 @@ import androidx.lifecycle.viewModelScope
 import com.luisd.hodler.domain.model.HoldingWithPrice
 import com.luisd.hodler.domain.model.PortfolioSummary
 import com.luisd.hodler.domain.model.Result
-import com.luisd.hodler.domain.usecase.GetHoldingsWithPricesUseCase
+import com.luisd.hodler.domain.repository.PortfolioRepository
+import com.luisd.hodler.domain.usecase.ObservePortfolioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PortfolioViewModel @Inject constructor(
-    private val getHoldingsWithPricesUseCase: GetHoldingsWithPricesUseCase
+    private val observePortfolioUseCase: ObservePortfolioUseCase,
+    private val portfolioRepository: PortfolioRepository,
 ) : ViewModel() {
-    private val _state = MutableStateFlow<Result<Portfolio>>(Result.Loading)
-    val state: StateFlow<Result<Portfolio>> = _state.asStateFlow()
+
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
     init {
-        loadPortfolio()
-    }
-
-    private fun loadPortfolio() {
         viewModelScope.launch {
-            getHoldingsWithPricesUseCase().collect { result ->
-                _state.value = when (result) {
-                    is Result.Success -> {
-                        Result.Success(
-                            Portfolio(
-                                portfolioSummary = aggregateSummary(result.data),
-                                holdingsWithPrice = result.data
-                            )
-                        ) as Result<Portfolio>
-                    }
-
-                    is Result.Loading -> Result.Loading
-                    is Result.Error -> Result.Error(result.exception)
-                }
-            }
+            refreshTrigger.emit(Unit)
         }
     }
 
-    fun refresh() {
-        loadPortfolio()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<PortfolioUiState> = refreshTrigger
+        .flatMapLatest { observePortfolioUseCase() }
+        .map { result ->
+            when (result) {
+                is Result.Error -> PortfolioUiState.Error(
+                    message = result.exception.message ?: "Failed to load portfolio"
+                )
+
+                Result.Loading -> PortfolioUiState.Loading
+                is Result.Success -> {
+                    val holdings = result.data
+                    if (holdings.isEmpty()) {
+                        PortfolioUiState.Empty
+                    } else {
+                        PortfolioUiState.Success(
+                            summary = aggregateSummary(result.data),
+                            holdings = result.data
+                        )
+                    }
+                }
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = PortfolioUiState.Loading
+        )
+
+    fun refreshPrices() {
+        viewModelScope.launch {
+            refreshTrigger.emit(Unit)
+        }
     }
 
     private fun aggregateSummary(holdings: List<HoldingWithPrice>): PortfolioSummary {
@@ -74,9 +93,10 @@ class PortfolioViewModel @Inject constructor(
             totalProfitLossPercent24h = totalProfitLossPercent24h
         )
     }
-}
 
-data class Portfolio(
-    val portfolioSummary: PortfolioSummary,
-    val holdingsWithPrice: List<HoldingWithPrice>
-)
+    fun deleteHolding(id: Long) {
+        viewModelScope.launch {
+            portfolioRepository.deleteHoldingById(id)
+        }
+    }
+}

@@ -3,6 +3,7 @@ package com.luisd.hodler.presentation.ui.portfolio.components
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.luisd.hodler.domain.model.PortfolioSummary
 import com.luisd.hodler.presentation.theme.HodlerTheme
@@ -13,7 +14,8 @@ import com.luisd.hodler.presentation.ui.util.toUsdFormat
 
 @Composable
 fun PortfolioSummarySection(
-    portfolioSummary: PortfolioSummary
+    portfolioSummary: PortfolioSummary,
+    modifier: Modifier = Modifier,
 ) {
     val stats = remember(portfolioSummary) {
         listOf(
@@ -39,7 +41,7 @@ fun PortfolioSummarySection(
         )
     }
 
-    StatsGrid(stats = stats)
+    StatsGrid(stats = stats, modifier = modifier)
 }
 
 @Preview(name = "Light", showBackground = true)

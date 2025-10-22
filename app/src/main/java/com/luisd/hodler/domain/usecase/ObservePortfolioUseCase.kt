@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetHoldingsWithPricesUseCase @Inject constructor(
+class ObservePortfolioUseCase @Inject constructor(
     private val portfolioRepository: PortfolioRepository,
     private val coinRepository: CoinRepository,
 ) {

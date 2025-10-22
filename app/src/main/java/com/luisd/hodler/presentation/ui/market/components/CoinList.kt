@@ -41,7 +41,7 @@ fun CoinList(
 ) {
     LazyColumn(
         modifier = modifier
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp)
             .fillMaxSize()
     ) {
         items(coins) { coin ->

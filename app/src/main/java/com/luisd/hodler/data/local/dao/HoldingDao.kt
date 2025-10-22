@@ -13,7 +13,7 @@ interface HoldingDao {
     fun getAllHoldings(): Flow<List<HoldingEntity>>
 
     @Query("SELECT * FROM holdings WHERE id = :id")
-    fun getHoldingById(id: String): Flow<HoldingEntity>
+    fun getHoldingById(id: Long): Flow<HoldingEntity>
 
     @Query("SELECT * FROM holdings WHERE coinId = :coinId ORDER BY purchaseDate DESC")
     fun getHoldingsByCoinId(coinId: String): Flow<List<HoldingEntity>>
@@ -22,7 +22,7 @@ interface HoldingDao {
     fun insertHolding(holdingEntity: HoldingEntity): Long
 
     @Query("DELETE FROM holdings WHERE id = :id")
-    fun deleteHoldingById(id: String): Int
+    fun deleteHoldingById(id: Long): Int
 
     @Query("DELETE FROM holdings")
     fun deleteAllHoldings(): Int

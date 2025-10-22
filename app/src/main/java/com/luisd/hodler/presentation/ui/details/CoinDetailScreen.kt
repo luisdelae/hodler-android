@@ -70,7 +70,11 @@ fun DetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                         )
-                        Text(text = "Back")
+                        Text(
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                            text = "Back",
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 },
                 actions = {

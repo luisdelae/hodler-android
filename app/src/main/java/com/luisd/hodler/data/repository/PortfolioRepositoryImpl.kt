@@ -20,7 +20,7 @@ class PortfolioRepositoryImpl @Inject constructor(
             .asResult()
     }
 
-    override fun getHoldingById(id: String): Flow<Result<Holding>> {
+    override fun getHoldingById(id: Long): Flow<Result<Holding>> {
         return holdingDao.getHoldingById(id = id)
             .map { it.toDomain() }
             .asResult()
@@ -35,7 +35,7 @@ class PortfolioRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteHoldingById(id: String): Result<Unit> {
+    override suspend fun deleteHoldingById(id: Long): Result<Unit> {
         return try {
             holdingDao.deleteHoldingById(id)
             Result.Success(Unit)
