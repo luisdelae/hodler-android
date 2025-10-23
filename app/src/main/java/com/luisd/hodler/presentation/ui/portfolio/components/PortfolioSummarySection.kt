@@ -1,10 +1,15 @@
 package com.luisd.hodler.presentation.ui.portfolio.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.luisd.hodler.domain.model.PortfolioSummary
 import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.ui.components.Stat
@@ -41,7 +46,15 @@ fun PortfolioSummarySection(
         )
     }
 
-    StatsGrid(stats = stats, modifier = modifier)
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Summary",
+            modifier = Modifier.padding(16.dp)
+        )
+        StatsGrid(stats = stats, modifier = modifier)
+    }
 }
 
 @Preview(name = "Light", showBackground = true)

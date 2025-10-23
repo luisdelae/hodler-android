@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateSetOf
@@ -28,7 +29,6 @@ fun PortfolioSection(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         item {
             PortfolioSummarySection(
@@ -36,11 +36,17 @@ fun PortfolioSection(
             )
         }
 
-        item { Text("Holdings") }
+        item {
+            Text(
+                text = "Holdings",
+                modifier = Modifier.padding(16.dp),
+            )
+        }
 
         state.holdings.forEach { coinGroup ->
             item(key = coinGroup.coinId) {
                 CoinGroupCard(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     coinGroup = coinGroup,
                     isExpanded = expandedCoinIds.contains(coinGroup.coinId),
                     onToggle = {

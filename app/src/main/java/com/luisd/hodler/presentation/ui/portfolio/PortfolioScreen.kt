@@ -93,11 +93,10 @@ fun PortfolioScreen(
                         .padding(paddingValues)
                         .fillMaxSize()
                 ) {
-//                    PortfolioSummarySection(
-//                        portfolioSummary = state.summary,
-//                        modifier = Modifier.padding(vertical = 16.dp),
-//                    )
-
+                    PortfolioSummarySection(
+                        portfolioSummary = state.summary,
+                        modifier = Modifier.padding(vertical = 16.dp),
+                    )
                 }
             }
         }
