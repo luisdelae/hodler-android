@@ -23,12 +23,12 @@ import com.luisd.hodler.presentation.ui.portfolio.PortfolioUiState
 @Composable
 fun PortfolioSection(
     state: PortfolioUiState.Success,
+    modifier: Modifier = Modifier,
 ) {
     val expandedCoinIds = remember { mutableStateSetOf<String>() }
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         item {
             PortfolioSummarySection(

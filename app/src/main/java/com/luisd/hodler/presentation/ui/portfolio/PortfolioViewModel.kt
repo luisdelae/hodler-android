@@ -67,14 +67,20 @@ class PortfolioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Aggregates individual holdings into portfolio summary statistics
+     *
+     * @param holdings List of all user holdings with current prices
+     * @return Portfolio summary with totals and calculated percentages
+     */
     private fun aggregateSummary(holdings: List<HoldingWithPrice>): PortfolioSummary {
         val coinsOwned = holdings.distinctBy { it.holding.coinId }.size
-        val totalCurrentValue = holdings.sumOf { it.currentPrice }
+        val totalCurrentValue = holdings.sumOf { it.currentValue }
         val totalProfitLoss = holdings.sumOf { it.profitLoss }
         val totalProfitLoss24h = holdings.sumOf { it.profitLoss24h }
         val totalCostBasis = holdings.sumOf { it.costBasis }
 
-        val totalProfileLossPercent = if (totalCostBasis > 0.0) {
+        val totalProfitLossPercent = if (totalCostBasis > 0.0) {
             (totalProfitLoss / totalCostBasis) * 100
         } else 0.0
 
@@ -88,7 +94,7 @@ class PortfolioViewModel @Inject constructor(
             totalValue = totalCurrentValue,
             totalCostBasis = totalCostBasis,
             totalProfitLoss = totalProfitLoss,
-            totalProfitLossPercent = totalProfileLossPercent,
+            totalProfitLossPercent = totalProfitLossPercent,
             totalProfitLoss24h = totalProfitLoss24h,
             totalProfitLossPercent24h = totalProfitLossPercent24h
         )

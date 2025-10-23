@@ -27,22 +27,16 @@ fun PortfolioSummarySection(
             Stat("Total Value", portfolioSummary.totalValue.toUsdFormat()),
             Stat("Cost Basis", portfolioSummary.totalCostBasis.toUsdFormat()),
             Stat(
-                "Total P/L Amount",
-                portfolioSummary.totalProfitLoss.toUsdFormat()
-            ),
-            Stat(
                 "Total P/L",
-                portfolioSummary.totalProfitLossPercent.toPercentageFormat()
+                "${portfolioSummary.totalProfitLoss.toUsdFormat()}\n" +
+                        "(${portfolioSummary.totalProfitLossPercent.toPercentageFormat()})"
             ),
             Stat(
-                "24h Change Amount",
-                portfolioSummary.totalProfitLoss24h.toUsdFormat()
+                "24h Change",
+                "${portfolioSummary.totalProfitLoss24h.toUsdFormat()}\n" +
+                        "(${portfolioSummary.totalProfitLossPercent24h.toPercentageFormat()})"
             ),
-            Stat(
-                "24h Change Percent",
-                portfolioSummary.totalProfitLossPercent24h.toPercentageFormat()
-            ),
-            Stat("Coins Held", portfolioSummary.coinsOwned.toString())
+            Stat("Coins Owned", portfolioSummary.coinsOwned.toString())
         )
     }
 

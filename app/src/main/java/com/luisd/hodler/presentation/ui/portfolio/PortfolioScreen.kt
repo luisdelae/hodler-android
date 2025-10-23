@@ -23,6 +23,7 @@ import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.portfolio.components.CoinGroupCard
 import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioEmptySection
+import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioSection
 import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioSummarySection
 
 @Composable
@@ -82,22 +83,16 @@ fun PortfolioScreen(
 
             is PortfolioUiState.Empty -> {
                 PortfolioEmptySection(
-                    onAddNewHolding = { onAddHoldingClick },
+                    onAddNewHolding = onAddHoldingClick,
                     modifier = Modifier.padding(paddingValues)
                 )
             }
 
             is PortfolioUiState.Success -> {
-                Column(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize()
-                ) {
-                    PortfolioSummarySection(
-                        portfolioSummary = state.summary,
-                        modifier = Modifier.padding(vertical = 16.dp),
-                    )
-                }
+                PortfolioSection(
+                    state = state,
+                    modifier = Modifier.padding(paddingValues),
+                )
             }
         }
     }
