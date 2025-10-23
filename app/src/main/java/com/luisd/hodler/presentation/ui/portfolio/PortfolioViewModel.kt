@@ -49,7 +49,7 @@ class PortfolioViewModel @Inject constructor(
                     } else {
                         PortfolioUiState.Success(
                             summary = aggregateSummary(result.data),
-                            holdings = result.data
+                            holdings = combineHoldingsToGroup(result.data)
                         )
                     }
                 }
@@ -94,9 +94,57 @@ class PortfolioViewModel @Inject constructor(
         )
     }
 
+    private fun combineHoldingsToGroup(holdings: List<HoldingWithPrice>): List<CoinGroup> {
+        return holdings
+            .groupBy { it.holding.coinId }
+            .map { (coinId, holdingsList) ->
+                CoinGroup(
+                    coinId = coinId,
+                    coinSymbol = holdingsList.first().holding.coinSymbol,
+                    coinName = holdingsList.first().holding.coinName,
+                    imageUrl = holdingsList.first().holding.imageUrl,
+                    totalAmount = holdingsList.sumOf { it.holding.amount },
+                    averageCostBasis = holdingsList.sumOf {
+                        it.holding.amount * it.holding.purchasePrice
+                    } / holdingsList.sumOf { it.holding.amount },
+                    totalCurrentValue = holdingsList.sumOf { it.currentValue },
+                    totalProfitLoss = holdingsList.sumOf { it.profitLoss },
+                    totalProfitLossPercent = calculateGroupPercent(holdingsList),
+                    holdings = holdingsList.sortedByDescending { it.holding.purchaseDate }
+                )
+            }
+    }
+
+    private fun calculateGroupPercent(holdingsList: List<HoldingWithPrice>): Double {
+        val totalCostBasis = holdingsList.sumOf { it.costBasis }
+        val totalCurrentValue = holdingsList.sumOf { it.currentValue }
+
+        return if (totalCostBasis > 0) {
+            ((totalCurrentValue - totalCostBasis) / totalCostBasis) * 100
+        } else {
+            0.0
+        }
+    }
+
     fun deleteHolding(id: Long) {
         viewModelScope.launch {
             portfolioRepository.deleteHoldingById(id)
         }
     }
 }
+
+data class CoinGroup(
+    val coinId: String,
+    val coinSymbol: String,
+    val coinName: String,
+    val imageUrl: String,
+
+    val totalAmount: Double,
+    val averageCostBasis: Double,
+    val totalCurrentValue: Double,
+    val totalProfitLoss: Double,
+    val totalProfitLossPercent: Double,
+
+    val holdings: List<HoldingWithPrice>,
+    val holdingCount: Int = holdings.size
+)

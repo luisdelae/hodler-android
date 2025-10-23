@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.luisd.hodler.domain.model.Result
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
+import com.luisd.hodler.presentation.ui.portfolio.components.CoinGroupCard
 import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioEmptySection
 import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioSummarySection
 
@@ -51,13 +52,15 @@ fun PortfolioScreen(
         modifier = Modifier.padding(outerPaddingValues),
         topBar = { TopBar() },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onAddHoldingClick() }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add holding",
-                )
+            if (state is PortfolioUiState.Success) {
+                FloatingActionButton(
+                    onClick = { onAddHoldingClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add holding",
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -90,10 +93,11 @@ fun PortfolioScreen(
                         .padding(paddingValues)
                         .fillMaxSize()
                 ) {
-                    PortfolioSummarySection(
-                        portfolioSummary = state.summary,
-                        modifier = Modifier.padding(vertical = 16.dp),
-                    )
+//                    PortfolioSummarySection(
+//                        portfolioSummary = state.summary,
+//                        modifier = Modifier.padding(vertical = 16.dp),
+//                    )
+
                 }
             }
         }

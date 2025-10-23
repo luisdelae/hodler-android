@@ -47,3 +47,9 @@ fun Long.timeStampChartFormat(timeRange: TimeRange): String {
     }
     return format.format(date)
 }
+
+fun Long.formatDate(): String {
+    val date = Date(this)
+    val format = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    return format.format(date)
+}

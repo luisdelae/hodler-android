@@ -30,7 +30,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.luisd.hodler.domain.model.Coin
 import com.luisd.hodler.presentation.theme.HodlerTheme
-import com.luisd.hodler.presentation.theme.getProfitLossColor
+import com.luisd.hodler.presentation.ui.components.ProfitLossPercentText
 import com.luisd.hodler.presentation.ui.util.toUsdFormat
 
 @Composable
@@ -110,11 +110,7 @@ fun CoinListItem(
                     text = coin.currentPrice.toUsdFormat(),
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Text(
-                    text = "${coin.priceChangePercentage24h}%",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = getProfitLossColor(coin.priceChangePercentage24h)
-                )
+                ProfitLossPercentText(coin.priceChangePercentage24h)
             }
         }
     }

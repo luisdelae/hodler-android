@@ -26,8 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.luisd.hodler.domain.model.CoinDetail
 import com.luisd.hodler.presentation.theme.HodlerTheme
-import com.luisd.hodler.presentation.theme.getProfitLossColor
-import com.luisd.hodler.presentation.ui.util.toPercentageFormat
+import com.luisd.hodler.presentation.ui.components.ProfitLossPercentText
 import com.luisd.hodler.presentation.ui.util.toUsdFormat
 
 @Composable
@@ -85,11 +84,7 @@ fun CoinDetailCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = coinDetails.priceChangePercentage24h.toPercentageFormat(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = getProfitLossColor(coinDetails.priceChangePercentage24h),
-                )
+                ProfitLossPercentText(coinDetails.priceChangePercentage24h)
             }
 
             Surface(

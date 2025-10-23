@@ -77,11 +77,3 @@ fun getProfitLossColor(value: Double): Color {
         MaterialTheme.cryptoColors.loss
     }
 }
-
-/**
- * Helper function to format percentage with color
- * Returns color for the percentage value
- */
-@Composable
-@ReadOnlyComposable
-fun getPercentageColor(percentage: Double): Color = getProfitLossColor(percentage)
