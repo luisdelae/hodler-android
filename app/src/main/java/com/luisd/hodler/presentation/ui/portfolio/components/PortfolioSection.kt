@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateSetOf
@@ -23,6 +23,7 @@ import com.luisd.hodler.presentation.ui.portfolio.PortfolioUiState
 @Composable
 fun PortfolioSection(
     state: PortfolioUiState.Success,
+    onNavigateToCoinDetail: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val expandedCoinIds = remember { mutableStateSetOf<String>() }
@@ -40,6 +41,7 @@ fun PortfolioSection(
             Text(
                 text = "Holdings",
                 modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.titleLarge,
             )
         }
 
@@ -55,7 +57,7 @@ fun PortfolioSection(
                         } else {
                             expandedCoinIds.add(coinGroup.coinId)
                         }
-                    }
+                    },
                 )
             }
 
@@ -64,7 +66,15 @@ fun PortfolioSection(
                     items = coinGroup.holdings,
                     key = { it.holding.id }
                 ) { holding ->
-                    IndividualHoldingCard(holding = holding)
+                    IndividualHoldingCard(
+                        holding = holding,
+                        onClick = {
+                            onNavigateToCoinDetail(
+                                holding.holding.coinId,
+                                holding.holding.coinSymbol
+                            )
+                        }
+                    )
                 }
             }
         }
@@ -174,7 +184,8 @@ fun PortfolioSectionPreview() {
                         holdingCount = 2
                     )
                 )
-            )
+            ),
+            onNavigateToCoinDetail = { string: String, string1: String -> }
         )
     }
 }

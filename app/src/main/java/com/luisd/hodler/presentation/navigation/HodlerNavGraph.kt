@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.luisd.hodler.presentation.ui.details.CoinDetailRoute
 import com.luisd.hodler.presentation.ui.market.MarketRoute
 import com.luisd.hodler.presentation.ui.portfolio.PortfolioRoute
@@ -41,6 +40,9 @@ fun HodlerNavGraph(
                     outerPaddingValues = paddingValues,
                     onAddHoldingClick = {
                         // TODO: Add when holding screen is created
+                    },
+                    onNavigateToCoinDetail = { coinId, symbol ->
+                        Screen.CoinDetail(coinId = coinId, coinSymbol = symbol)
                     }
                 )
             }

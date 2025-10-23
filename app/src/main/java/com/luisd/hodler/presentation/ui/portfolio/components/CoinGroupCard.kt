@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +36,10 @@ fun CoinGroupCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
-            .clickable { onToggle() }
+            .clickable { onToggle() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -51,26 +55,36 @@ fun CoinGroupCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(coinGroup.coinName, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = coinGroup.coinName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     if (coinGroup.holdingCount > 1) {
                         Text(
-                            " (${coinGroup.holdingCount} purchases)",
+                            text= "(${coinGroup.holdingCount} purchases)",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
-                Text(coinGroup.coinSymbol, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    "${coinGroup.totalAmount} ${coinGroup.coinSymbol}",
-                    style = MaterialTheme.typography.bodySmall
+                    text = coinGroup.coinSymbol,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "${coinGroup.totalAmount} ${coinGroup.coinSymbol}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    coinGroup.totalCurrentValue.toUsdFormat(),
-                    style = MaterialTheme.typography.titleMedium
+                    text = coinGroup.totalCurrentValue.toUsdFormat(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 ProfitLossPercentText(coinGroup.totalProfitLossPercent)
             }

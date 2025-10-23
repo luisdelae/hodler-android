@@ -1,5 +1,6 @@
 package com.luisd.hodler.presentation.ui.portfolio.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,12 +24,14 @@ import com.luisd.hodler.presentation.ui.util.toUsdFormat
 @Composable
 fun IndividualHoldingCard(
     holding: HoldingWithPrice,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 48.dp, bottom = 8.dp),
+            .padding(start = 48.dp, bottom = 8.dp)
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
