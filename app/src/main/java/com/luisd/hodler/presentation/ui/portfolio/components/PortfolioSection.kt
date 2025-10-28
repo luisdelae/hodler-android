@@ -1,7 +1,10 @@
 package com.luisd.hodler.presentation.ui.portfolio.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,7 +32,8 @@ fun PortfolioSection(
     val expandedCoinIds = remember { mutableStateSetOf<String>() }
 
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
     ) {
         item {
             PortfolioSummarySection(
@@ -40,7 +44,7 @@ fun PortfolioSection(
         item {
             Text(
                 text = "Holdings",
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(vertical = 8.dp),
                 style = MaterialTheme.typography.titleLarge,
             )
         }
@@ -48,7 +52,6 @@ fun PortfolioSection(
         state.holdings.forEach { coinGroup ->
             item(key = coinGroup.coinId) {
                 CoinGroupCard(
-                    modifier = Modifier.padding(horizontal = 16.dp),
                     coinGroup = coinGroup,
                     isExpanded = expandedCoinIds.contains(coinGroup.coinId),
                     onToggle = {
@@ -66,15 +69,19 @@ fun PortfolioSection(
                     items = coinGroup.holdings,
                     key = { it.holding.id }
                 ) { holding ->
-                    IndividualHoldingCard(
-                        holding = holding,
-                        onClick = {
-                            onNavigateToCoinDetail(
-                                holding.holding.coinId,
-                                holding.holding.coinSymbol
-                            )
-                        }
-                    )
+//                    Box(modifier = Modifier.padding(start = 48.dp, end = 16.dp)) {
+                        IndividualHoldingCard(
+                            holding = holding,
+                            onClick = {
+                                onNavigateToCoinDetail(
+                                    holding.holding.coinId,
+                                    holding.holding.coinSymbol
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(start = 32.dp, bottom = 8.dp)
+                        )
+//                    }
                 }
             }
         }

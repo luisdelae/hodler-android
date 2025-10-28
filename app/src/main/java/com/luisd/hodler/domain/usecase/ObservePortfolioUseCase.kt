@@ -20,47 +20,64 @@ class ObservePortfolioUseCase @Inject constructor(
                     Result.Loading -> Result.Loading
                     is Result.Success -> {
                         val holdings = holdingResult.data
-                        val coinIds = holdings.map { it.coinId }.distinct()
-
-                        val pricesMap =
-                            when (val pricesResult = coinRepository.getCurrentPrices(coinIds)) {
-                                is Result.Success -> pricesResult.data
-                                else -> emptyMap()
-                            }
-
-                        val holdingsWithPrices = holdings.map { holding ->
-                            val priceInfo = pricesMap[holding.coinId]
-                            val currentPrice = priceInfo?.usd ?: 0.0
-                            val usd24hChange = priceInfo?.usd24hChange ?: 0.0
-
-                            val currentValue = currentPrice * holding.amount
-                            val purchaseValue = holding.purchasePrice * holding.amount
-
-                            val price24hAgo = if (usd24hChange != 0.0) {
-                                currentPrice / (1 + (usd24hChange / 100))
-                            } else {
-                                currentPrice
-                            }
-
-                            val profitLoss = currentValue - purchaseValue
-                            val profitLossPercent = (profitLoss / purchaseValue) * 100
-
-                            val profitLoss24h = (currentPrice - price24hAgo) * holding.amount
-                            val profitLoss24hPercent = ((currentPrice - price24hAgo) / price24hAgo) * 100
-
-                            HoldingWithPrice(
-                                holding = holding,
-                                currentPrice = currentPrice,
-                                currentValue = currentValue,
-                                costBasis = purchaseValue,
-                                profitLoss = profitLoss,
-                                profitLossPercent = profitLossPercent,
-                                profitLoss24h = profitLoss24h,
-                                profitLossPercent24h = profitLoss24hPercent
-                            )
+                        if (holdings.isEmpty()) {
+                            return@map Result.Success(emptyList())
                         }
 
-                        Result.Success(holdingsWithPrices)
+                        val coinIds = holdings.map { it.coinId }.distinct()
+
+                        val pricesResult = coinRepository.getCurrentPrices(coinIds)
+                        android.util.Log.d("PortfolioDebug", "Prices result: $pricesResult")
+                        when (pricesResult) {
+                            is Result.Error -> return@map Result.Error(pricesResult.exception)
+                            Result.Loading -> return@map Result.Loading
+                            is Result.Success -> {
+                                val pricesMap = pricesResult.data
+
+                                val holdingsWithPrices = holdings.map { holding ->
+                                    val priceInfo = pricesMap[holding.coinId]
+                                    val currentPrice = priceInfo?.usd ?: 0.0
+                                    val usd24hChange = priceInfo?.usd24hChange ?: 0.0
+
+                                    val currentValue = currentPrice * holding.amount
+                                    val purchaseValue = holding.purchasePrice * holding.amount
+
+                                    val price24hAgo = if (usd24hChange != 0.0) {
+                                        currentPrice / (1 + (usd24hChange / 100))
+                                    } else {
+                                        currentPrice
+                                    }
+
+                                    val profitLoss = currentValue - purchaseValue
+                                    val profitLossPercent = if (purchaseValue > 0) {
+                                        (profitLoss / purchaseValue) * 100
+                                    } else {
+                                        0.0
+                                    }
+
+                                    val profitLoss24h =
+                                        (currentPrice - price24hAgo) * holding.amount
+                                    val profitLoss24hPercent = if (price24hAgo > 0) {
+                                        ((currentPrice - price24hAgo) / price24hAgo) * 100
+                                    } else {
+                                        0.0
+                                    }
+
+                                    HoldingWithPrice(
+                                        holding = holding,
+                                        currentPrice = currentPrice,
+                                        currentValue = currentValue,
+                                        costBasis = purchaseValue,
+                                        profitLoss = profitLoss,
+                                        profitLossPercent = profitLossPercent,
+                                        profitLoss24h = profitLoss24h,
+                                        profitLossPercent24h = profitLoss24hPercent
+                                    )
+                                }
+
+                                Result.Success(holdingsWithPrices)
+                            }
+                        }
                     }
                 }
             }

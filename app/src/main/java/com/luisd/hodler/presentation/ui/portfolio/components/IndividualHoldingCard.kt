@@ -29,11 +29,9 @@ fun IndividualHoldingCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 48.dp, bottom = 8.dp)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {

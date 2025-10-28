@@ -75,7 +75,7 @@ fun StatsGrid(
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         maxItemsInEachRow = 2,

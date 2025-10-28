@@ -39,7 +39,7 @@ interface CoinGeckoApi {
      */
     @GET("simple/price")
     suspend fun getCurrentPrices(
-        @Query("vs_currency") currency: String = "usd",
+        @Query("vs_currencies") currency: String = "usd",
         @Query("ids") coinIds: String,
         @Query("include_market_cap") includeMarketCap: Boolean = false,
         @Query("include_24hr_vol") include24hVol: Boolean = false,

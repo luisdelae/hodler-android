@@ -58,7 +58,9 @@ fun PortfolioScreen(
         floatingActionButton = {
             if (state is PortfolioUiState.Success) {
                 FloatingActionButton(
-                    onClick = { onAddHoldingClick() }
+                    onClick = { onAddHoldingClick() },
+                    modifier = Modifier
+                        .padding(bottom = outerPaddingValues.calculateBottomPadding())
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,

@@ -44,11 +44,11 @@ fun PortfolioSummarySection(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = "Summary",
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = modifier,
             style = MaterialTheme.typography.titleLarge,
         )
         StatsGrid(stats = stats, modifier = modifier)
