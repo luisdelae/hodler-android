@@ -29,12 +29,13 @@ class AddHoldingViewModel @Inject constructor(
 
     private val route = savedStateHandle.toRoute<Screen.AddHoldingScreen>()
     private val holdingIdToEdit = route.holdingId
+    private val preselectedCoinId = route.coinId
 
     init {
-        if (holdingIdToEdit != null) {
-            loadHoldingForEdit(holdingIdToEdit)
-        } else {
-            loadCoins()
+        when {
+            holdingIdToEdit != null -> loadHoldingForEdit(holdingIdToEdit)
+            preselectedCoinId != null -> loadPreselectedCoin(preselectedCoinId)  // ADD THIS
+            else -> loadCoins()
         }
     }
 
@@ -82,6 +83,26 @@ class AddHoldingViewModel @Inject constructor(
                     )
                 }
                 Result.Loading -> { /* Won't happen */ }
+            }
+        }
+    }
+
+    private fun loadPreselectedCoin(coinId: String) {
+        viewModelScope.launch {
+            coinRepository.getCoinById(coinId).collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        _uiState.value = AddHoldingUiState.FormEntry(
+                            selectedCoin = result.data
+                        )
+                    }
+                    is Result.Error -> {
+                        loadCoins()
+                    }
+                    Result.Loading -> {
+                        _uiState.value = AddHoldingUiState.Loading
+                    }
+                }
             }
         }
     }

@@ -34,7 +34,14 @@ fun HodlerNavGraph(
                 )
             }
             composable<Screen.CoinDetail> { backStackEntry ->
-                CoinDetailRoute(onNavigateBack = { navController.popBackStack() })
+                CoinDetailRoute(
+                    onNavigateBack = { navController.popBackStack() },
+                    onAddToPortfolio = { coinId ->
+                        navController.navigate(
+                            Screen.AddHoldingScreen(holdingId = null, coinId = coinId)
+                        )
+                    }
+                )
             }
             composable<Screen.Portfolio> { backStackEntry ->
                 PortfolioRoute(

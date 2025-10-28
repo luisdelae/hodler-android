@@ -15,6 +15,7 @@ sealed interface Screen {
 
     @Serializable
     data class AddHoldingScreen(
-        val holdingId: Long? = null
+        val holdingId: Long? = null,
+        val coinId: String? = null,
     ) : Screen
 }

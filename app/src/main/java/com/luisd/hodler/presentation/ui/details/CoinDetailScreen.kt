@@ -35,6 +35,7 @@ import com.luisd.hodler.presentation.ui.details.components.TimeRangeChips
 @Composable
 fun CoinDetailRoute(
     onNavigateBack: () -> Unit,
+    onAddToPortfolio: (String) -> Unit,
     viewModel: CoinDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -47,7 +48,7 @@ fun CoinDetailRoute(
         coinSymbol = viewModel.coinSymbol,
         onNavigateBack = onNavigateBack,
         onSelectedTimeRangeChange = { timeRange -> onTimeRangeChange(timeRange) },
-        onAddToPortfolio = { coinId -> viewModel.addToPortfolio(coinId) }
+        onAddToPortfolio = onAddToPortfolio
     )
 }
 
@@ -65,28 +66,13 @@ fun DetailScreen(
             CenterAlignedTopAppBar(
                 title = { Text(text = coinSymbol.uppercase()) },
                 navigationIcon = {
-                    TextButton(onClick = { onNavigateBack() }) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                        Text(
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                            text = "Back",
-                            style = MaterialTheme.typography.titleMedium
+                            contentDescription = "Back"
                         )
                     }
                 },
-                actions = {
-                    IconButton(
-                        onClick = { /* TODO: Implement favorite */ }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.StarBorder,
-                            contentDescription = "Add to favorites",
-                        )
-                    }
-                }
             )
         }
     ) { paddingValues ->

@@ -82,11 +82,4 @@ class CoinDetailViewModel @Inject constructor(
     fun updateTimeRange(timeRange: TimeRange) {
         loadMarketData(timeRange)
     }
-
-    fun addToPortfolio(coinId: String) {
-        viewModelScope.launch {
-            /** Implement add to portfolio **/
-
-        }
-    }
 }
