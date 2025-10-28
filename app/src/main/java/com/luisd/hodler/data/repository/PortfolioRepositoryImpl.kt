@@ -20,24 +20,40 @@ class PortfolioRepositoryImpl @Inject constructor(
             .asResult()
     }
 
-    override fun getHoldingById(id: Long): Flow<Result<Holding>> {
-        return holdingDao.getHoldingById(id = id)
-            .map { it.toDomain() }
-            .asResult()
-    }
-
-    override suspend fun insertHolding(holding: Holding): Result<Unit> {
+    override suspend fun getHoldingById(id: Long): Result<Holding> {
         return try {
-            holdingDao.insertHolding(holding.toEntity())
-            Result.Success(Unit)
+            val entity = holdingDao.getHoldingById(id)
+            if (entity != null) {
+                Result.Success(entity.toDomain())
+            } else {
+                Result.Error(Exception("Holding not found"))
+            }
         } catch (e: Exception) {
             Result.Error(e)
         }
     }
 
-    override suspend fun deleteHoldingById(id: Long): Result<Unit> {
+    override suspend fun insertHolding(holding: Holding): Result<Long> {
         return try {
-            holdingDao.deleteHoldingById(id)
+            val result = holdingDao.insertHolding(holding.toEntity())
+            Result.Success(result)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    override suspend fun deleteHoldingById(id: Long): Result<Int> {
+        return try {
+            val result = holdingDao.deleteHoldingById(id)
+            Result.Success(result)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    override suspend fun updateHolding(holding: Holding): Result<Unit> {
+        return try {
+            holdingDao.updateHolding(holding.toEntity())
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e)

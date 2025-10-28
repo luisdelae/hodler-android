@@ -16,6 +16,6 @@ sealed interface PortfolioUiState {
 
     data class Error(
         val message: String,
-        val cachedHoldings: List<CoinGroup>? = null
+        val cachedHoldings: List<CoinGroup>? = null // TODO: Implement or remove depending on time constraints
     ) : PortfolioUiState
 }

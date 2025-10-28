@@ -38,6 +38,25 @@ class CoinRepositoryImpl @Inject constructor(
             emit(value = Result.Error(exception = e))
         }
     }
+
+    override fun getCoinById(coinId: String): Flow<Result<Coin>> = flow {
+        emit(Result.Loading)
+        try {
+            val response = api.getMarketCoins(
+                coinIds = coinId,
+                perPage = 1
+            )
+            val coin = response.firstOrNull()?.toDomain()
+            if (coin != null) {
+                emit(Result.Success(coin))
+            } else {
+                emit(Result.Error(Exception("Coin not found")))
+            }
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
+    }
+
     // TODO: Refactor to suspend instead of flow
     override fun getMarketChart(coinId: String, days: Int): Flow<Result<MarketChart>> = flow {
         emit(Result.Loading)

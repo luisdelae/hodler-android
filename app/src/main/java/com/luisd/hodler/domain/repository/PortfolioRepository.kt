@@ -6,7 +6,8 @@ import com.luisd.hodler.domain.model.Result
 
 interface PortfolioRepository {
     fun getAllHoldings(): Flow<Result<List<Holding>>>
-    fun getHoldingById(id: Long): Flow<Result<Holding>>
-    suspend fun insertHolding(holding: Holding): Result<Unit>
-    suspend fun deleteHoldingById(id: Long): Result<Unit>
+    suspend fun getHoldingById(id: Long): Result<Holding>
+    suspend fun insertHolding(holding: Holding): Result<Long>
+    suspend fun deleteHoldingById(id: Long): Result<Int>
+    suspend fun updateHolding(holding: Holding): Result<Unit>
 }

@@ -1,5 +1,6 @@
 package com.luisd.hodler.presentation.ui.portfolio
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,7 +54,6 @@ fun PortfolioScreen(
     onNavigateToCoinDetail: (String, String) -> Unit,
 ) {
     Scaffold(
-        modifier = Modifier.padding(outerPaddingValues),
         topBar = { TopBar() },
         floatingActionButton = {
             if (state is PortfolioUiState.Success) {
@@ -68,35 +68,39 @@ fun PortfolioScreen(
             }
         }
     ) { paddingValues ->
-        when (state) {
-            is PortfolioUiState.Loading -> {
-                LoadingContent(
-                    message = "Loading portfolio...",
-                    paddingValues = paddingValues
-                )
-            }
+        Box(
+            modifier = Modifier.padding(outerPaddingValues)
+        ) {
+            when (state) {
+                is PortfolioUiState.Loading -> {
+                    LoadingContent(
+                        message = "Loading portfolio...",
+                        paddingValues = paddingValues
+                    )
+                }
 
-            is PortfolioUiState.Error -> {
-                ErrorContent(
-                    message = "Failed to load portfolio",
-                    paddingValues = paddingValues,
-                    onRefresh = onRefresh,
-                )
-            }
+                is PortfolioUiState.Error -> {
+                    ErrorContent(
+                        message = "Failed to load portfolio",
+                        paddingValues = paddingValues,
+                        onRefresh = onRefresh,
+                    )
+                }
 
-            is PortfolioUiState.Empty -> {
-                PortfolioEmptySection(
-                    onAddNewHolding = onAddHoldingClick,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
+                is PortfolioUiState.Empty -> {
+                    PortfolioEmptySection(
+                        onAddNewHolding = onAddHoldingClick,
+                        modifier = Modifier.padding(paddingValues)
+                    )
+                }
 
-            is PortfolioUiState.Success -> {
-                PortfolioSection(
-                    state = state,
-                    modifier = Modifier.padding(paddingValues),
-                    onNavigateToCoinDetail = onNavigateToCoinDetail,
-                )
+                is PortfolioUiState.Success -> {
+                    PortfolioSection(
+                        state = state,
+                        modifier = Modifier.padding(paddingValues),
+                        onNavigateToCoinDetail = onNavigateToCoinDetail,
+                    )
+                }
             }
         }
     }

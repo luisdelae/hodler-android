@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
+import androidx.room.Update
 import com.luisd.hodler.data.local.entity.HoldingEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -13,17 +14,20 @@ interface HoldingDao {
     fun getAllHoldings(): Flow<List<HoldingEntity>>
 
     @Query("SELECT * FROM holdings WHERE id = :id")
-    fun getHoldingById(id: Long): Flow<HoldingEntity>
+    suspend fun getHoldingById(id: Long): HoldingEntity?
 
     @Query("SELECT * FROM holdings WHERE coinId = :coinId ORDER BY purchaseDate DESC")
     fun getHoldingsByCoinId(coinId: String): Flow<List<HoldingEntity>>
 
     @Insert(onConflict = REPLACE)
-    fun insertHolding(holdingEntity: HoldingEntity): Long
+    suspend fun insertHolding(holdingEntity: HoldingEntity): Long
 
     @Query("DELETE FROM holdings WHERE id = :id")
-    fun deleteHoldingById(id: Long): Int
+    suspend fun deleteHoldingById(id: Long): Int
 
     @Query("DELETE FROM holdings")
-    fun deleteAllHoldings(): Int
+    suspend fun deleteAllHoldings(): Int
+
+    @Update
+    suspend fun updateHolding(holding: HoldingEntity)
 }

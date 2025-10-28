@@ -1,5 +1,6 @@
 package com.luisd.hodler.presentation.ui.market
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luisd.hodler.domain.model.Coin
@@ -46,31 +48,34 @@ fun MarketScreen(
     onCoinClick: (String, String) -> Unit,
 ) {
     Scaffold(
-        modifier = Modifier.padding(outerPaddingValues),
         topBar = { TopBar() },
     ) { paddingValues ->
-        when (state) {
-            is Result.Loading -> {
-                LoadingContent(
-                    message = "Gathering coins...",
-                    paddingValues = paddingValues
-                )
-            }
+        Box(
+            modifier = Modifier.padding(outerPaddingValues)
+        ) {
+            when (state) {
+                is Result.Loading -> {
+                    LoadingContent(
+                        message = "Gathering coins...",
+                        paddingValues = paddingValues
+                    )
+                }
 
-            is Result.Error -> {
-                ErrorContent(
-                    message = "Failed to load coins",
-                    paddingValues = paddingValues,
-                    onRefresh = onRefresh,
-                )
-            }
+                is Result.Error -> {
+                    ErrorContent(
+                        message = "Failed to load coins",
+                        paddingValues = paddingValues,
+                        onRefresh = onRefresh,
+                    )
+                }
 
-            is Result.Success -> {
-                CoinList(
-                    modifier = Modifier.padding(paddingValues),
-                    coins = state.data,
-                    onCoinClick = onCoinClick,
-                )
+                is Result.Success -> {
+                    CoinList(
+                        modifier = Modifier.padding(paddingValues),
+                        coins = state.data,
+                        onCoinClick = onCoinClick,
+                    )
+                }
             }
         }
     }

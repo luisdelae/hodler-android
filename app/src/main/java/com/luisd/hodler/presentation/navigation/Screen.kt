@@ -12,4 +12,9 @@ sealed interface Screen {
     ) : Screen
     @Serializable
     data object Portfolio : Screen
+
+    @Serializable
+    data class AddHoldingScreen(
+        val holdingId: Long? = null
+    ) : Screen
 }

@@ -1,5 +1,6 @@
 package com.luisd.hodler.presentation.navigation
 
+import AddHoldingRoute
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -39,12 +40,15 @@ fun HodlerNavGraph(
                 PortfolioRoute(
                     outerPaddingValues = paddingValues,
                     onAddHoldingClick = {
-                        // TODO: Add when holding screen is created
+                        navController.navigate(Screen.AddHoldingScreen(holdingId = null))
                     },
                     onNavigateToCoinDetail = { coinId, symbol ->
                         Screen.CoinDetail(coinId = coinId, coinSymbol = symbol)
                     }
                 )
+            }
+            composable<Screen.AddHoldingScreen> {
+                AddHoldingRoute(onNavigateBack = { navController.popBackStack() })
             }
         }
     }

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 fun ErrorContent(
     message: String,
     paddingValues: PaddingValues,
-    onRefresh: () -> Unit
+    onRefresh: (() -> Unit)?,
 ) {
     Column(
         modifier = Modifier
@@ -40,10 +40,12 @@ fun ErrorContent(
             text = message,
             style = MaterialTheme.typography.titleMedium,
         )
-        TextButton(
-            onClick = { onRefresh() },
-        ) {
-            Text(text = "Refresh")
+        if (onRefresh != null) {
+            TextButton(
+                onClick = { onRefresh() },
+            ) {
+                Text(text = "Refresh")
+            }
         }
     }
 }
