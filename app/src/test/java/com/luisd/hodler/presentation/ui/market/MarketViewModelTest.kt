@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -71,10 +72,13 @@ class MarketViewModelTest {
         val viewModel = MarketViewModel(mockRepository)
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val success = awaitItem() as Result.Success
-            assertEquals(mockCoins, success.data)
+        viewModel.uiState.test {
+            assertTrue(awaitItem() is MarketUiState.Loading)
+            val success = awaitItem() as MarketUiState.Success
+            assertEquals(mockCoins, success.coins)
+            assertEquals("", success.searchQuery)
+            assertFalse(success.isSearchActive)
+            assertFalse(success.isRefreshing)
         }
     }
 
@@ -88,10 +92,10 @@ class MarketViewModelTest {
         val viewModel = MarketViewModel(mockRepository)
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val error = awaitItem() as Result.Error
-            assertEquals("Network error", error.exception.message)
+        viewModel.uiState.test {
+            assertTrue(awaitItem() is MarketUiState.Loading)
+            val error = awaitItem() as MarketUiState.Error
+            assertEquals("Network error", error.message)
         }
     }
 
@@ -101,17 +105,17 @@ class MarketViewModelTest {
         coEvery { mockRepository.getMarketCoins() } returns
                 flowOf(Result.Success(mockCoins))
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Act
         viewModel.onSearchQueryChange(query = "bitcoin")
+        advanceUntilIdle()
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val success = awaitItem() as Result.Success
-            assertEquals(1, success.data.size)
-            assertEquals("bitcoin", success.data[0].id)
-        }
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals("bitcoin", state.searchQuery)
+        assertEquals(1, state.displayedCoins.size)
+        assertEquals("bitcoin", state.displayedCoins[0].id)
     }
 
     @Test
@@ -120,17 +124,16 @@ class MarketViewModelTest {
         coEvery { mockRepository.getMarketCoins() } returns
                 flowOf(Result.Success(mockCoins))
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Act
         viewModel.onSearchQueryChange(query = "ETH")
+        advanceUntilIdle()
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val success = awaitItem() as Result.Success
-            assertEquals(1, success.data.size)
-            assertEquals("ethereum", success.data[0].id)
-        }
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals(1, state.displayedCoins.size)
+        assertEquals("ethereum", state.displayedCoins[0].id)
     }
 
     @Test
@@ -139,17 +142,16 @@ class MarketViewModelTest {
         coEvery { mockRepository.getMarketCoins() } returns
                 flowOf(Result.Success(mockCoins))
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Act
         viewModel.onSearchQueryChange(query = "BITCOIN")
+        advanceUntilIdle()
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val success = awaitItem() as Result.Success
-            assertEquals(1, success.data.size)
-            assertEquals("bitcoin", success.data[0].id)
-        }
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals(1, state.displayedCoins.size)
+        assertEquals("bitcoin", state.displayedCoins[0].id)
     }
 
     @Test
@@ -158,19 +160,17 @@ class MarketViewModelTest {
         coEvery { mockRepository.getMarketCoins() } returns
                 flowOf(Result.Success(mockCoins))
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
-        // Act - Clear search
+        // Act - Filter then clear
         viewModel.onSearchQueryChange(query = "bitcoin")
         viewModel.onSearchQueryChange(query = "")
+        advanceUntilIdle()
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val success = awaitItem() as Result.Success
-            assertEquals(2, success.data.size)
-            assertEquals("bitcoin", success.data[0].id)
-            assertEquals("ethereum", success.data[1].id)
-        }
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals(2, state.displayedCoins.size)
+        assertEquals("", state.searchQuery)
     }
 
     @Test
@@ -179,16 +179,16 @@ class MarketViewModelTest {
         coEvery { mockRepository.getMarketCoins() } returns
                 flowOf(Result.Success(mockCoins))
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Act
         viewModel.onSearchQueryChange(query = "dogecoin")
+        advanceUntilIdle()
 
         // Assert
-        viewModel.state.test {
-            assertTrue(awaitItem() is Result.Loading)
-            val success = awaitItem() as Result.Success
-            assertEquals(0, success.data.size)
-        }
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals(0, state.displayedCoins.size)
+        assertEquals(2, state.coins.size) // Original coins unchanged
     }
 
     @Test
@@ -197,12 +197,93 @@ class MarketViewModelTest {
         coEvery { mockRepository.getMarketCoins() } returns
                 flowOf(Result.Success(mockCoins))
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Act
         viewModel.onSearchQueryChange(query = "bitcoin")
         viewModel.onSearchActiveChange(active = false)
+        advanceUntilIdle()
 
         // Assert
-        assertEquals("", viewModel.searchQuery.value)
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals("", state.searchQuery)
+        assertFalse(state.isSearchActive)
+    }
+
+    @Test
+    fun `refresh sets isRefreshing to true then false`() = runTest {
+        // Arrange
+        coEvery { mockRepository.getMarketCoins() } returns
+                flowOf(Result.Success(mockCoins))
+        val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
+
+        // Act & Assert
+        viewModel.uiState.test {
+            skipItems(1) // Skip current success state
+
+            viewModel.refresh()
+
+            val refreshingState = awaitItem() as MarketUiState.Success
+            assertTrue(refreshingState.isRefreshing)
+
+            val completedState = awaitItem() as MarketUiState.Success
+            assertFalse(completedState.isRefreshing)
+            assertEquals(mockCoins, completedState.coins)
+        }
+    }
+
+    @Test
+    fun `refresh maintains search query and active state`() = runTest {
+        // Arrange
+        coEvery { mockRepository.getMarketCoins() } returns
+                flowOf(Result.Success(mockCoins))
+        val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("bitcoin")
+        viewModel.onSearchActiveChange(true)
+        advanceUntilIdle()
+
+        // Act
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        // Assert
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals("bitcoin", state.searchQuery)
+        assertTrue(state.isSearchActive)
+        assertEquals(1, state.displayedCoins.size)
+    }
+
+    @Test
+    fun `displayedCoins returns all coins when search query is blank`() = runTest {
+        // Arrange
+        coEvery { mockRepository.getMarketCoins() } returns
+                flowOf(Result.Success(mockCoins))
+        val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
+
+        // Assert
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals(mockCoins, state.displayedCoins)
+    }
+
+    @Test
+    fun `displayedCoins filters when search query is set`() = runTest {
+        // Arrange
+        coEvery { mockRepository.getMarketCoins() } returns
+                flowOf(Result.Success(mockCoins))
+        val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
+
+        // Act
+        viewModel.onSearchQueryChange("eth")
+        advanceUntilIdle()
+
+        // Assert
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertEquals(1, state.displayedCoins.size)
+        assertEquals("ethereum", state.displayedCoins[0].id)
     }
 }

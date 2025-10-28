@@ -16,10 +16,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,15 +40,11 @@ fun MarketRoute(
     onCoinClick: (String, String) -> Unit,
     viewModel: MarketViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val isSearchActive by viewModel.isSearchActive.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     MarketScreen(
         outerPaddingValues = outerPaddingValues,
-        state = state,
-        searchQuery = searchQuery,
-        isSearchActive = isSearchActive,
+        uiState = uiState,
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onSearchActiveChange = viewModel::onSearchActiveChange,
         onRefresh = viewModel::refresh,
@@ -54,58 +55,61 @@ fun MarketRoute(
 @Composable
 fun MarketScreen(
     outerPaddingValues: PaddingValues,
-    state: Result<List<Coin>>,
-    searchQuery: String,
-    isSearchActive: Boolean,
+    uiState: MarketUiState,
     onSearchQueryChange: (String) -> Unit,
     onSearchActiveChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
     onCoinClick: (String, String) -> Unit,
 ) {
+    val isRefreshing = (uiState as? MarketUiState.Success)?.isRefreshing ?: false
+
     Scaffold(
         topBar = {
             TopBar(
-                searchQuery = searchQuery,
-                isSearchActive = isSearchActive,
+                searchQuery = (uiState as? MarketUiState.Success)?.searchQuery ?: "",
+                isSearchActive = (uiState as? MarketUiState.Success)?.isSearchActive ?: false,
                 onSearchQueryChange = onSearchQueryChange,
                 onSearchActiveChange = onSearchActiveChange
             )
         },
     ) { paddingValues ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
             modifier = Modifier.padding(outerPaddingValues)
         ) {
-            when (state) {
-                is Result.Loading -> {
+            when (uiState) {
+                is MarketUiState.Loading -> {
                     LoadingContent(
                         message = "Gathering coins...",
                         paddingValues = paddingValues
                     )
                 }
 
-                is Result.Error -> {
+                is MarketUiState.Error -> {
                     ErrorContent(
-                        message = "Failed to load coins",
+                        message = uiState.message,
                         paddingValues = paddingValues,
                         onRefresh = onRefresh,
                     )
                 }
 
-                is Result.Success -> {
-                    if (state.data.isEmpty() && searchQuery.isNotBlank()) {
-                        // Empty search results
+                is MarketUiState.Success -> {
+                    val displayedCoins = uiState.displayedCoins
+
+                    if (displayedCoins.isEmpty() && uiState.searchQuery.isNotBlank()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(paddingValues)
                                 .padding(16.dp)
                         ) {
-                            Text("No coins found for \"$searchQuery\"")
+                            Text("No coins found for \"${uiState.searchQuery}\"")
                         }
                     } else {
                         CoinList(
                             modifier = Modifier.padding(paddingValues),
-                            coins = state.data,
+                            coins = displayedCoins,
                             onCoinClick = onCoinClick,
                         )
                     }
