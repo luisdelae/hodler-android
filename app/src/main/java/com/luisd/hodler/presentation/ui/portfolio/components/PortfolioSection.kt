@@ -1,10 +1,8 @@
 package com.luisd.hodler.presentation.ui.portfolio.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +25,8 @@ import com.luisd.hodler.presentation.ui.portfolio.PortfolioUiState
 fun PortfolioSection(
     state: PortfolioUiState.Success,
     onNavigateToCoinDetail: (String, String) -> Unit,
+    onEditHolding: (Long) -> Unit,
+    onDeleteHolding: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val expandedCoinIds = remember { mutableStateSetOf<String>() }
@@ -69,19 +69,23 @@ fun PortfolioSection(
                     items = coinGroup.holdings,
                     key = { it.holding.id }
                 ) { holding ->
-//                    Box(modifier = Modifier.padding(start = 48.dp, end = 16.dp)) {
-                        IndividualHoldingCard(
-                            holding = holding,
-                            onClick = {
-                                onNavigateToCoinDetail(
-                                    holding.holding.coinId,
-                                    holding.holding.coinSymbol
-                                )
-                            },
-                            modifier = Modifier
-                                .padding(start = 32.dp, bottom = 8.dp)
-                        )
-//                    }
+                    IndividualHoldingCard(
+                        holding = holding,
+                        onClick = {
+                            onNavigateToCoinDetail(
+                                holding.holding.coinId,
+                                holding.holding.coinSymbol
+                            )
+                        },
+                        onSwipeStartToEnd = {
+                            onEditHolding(holding.holding.id)
+                        },
+                        onSwipeEndToStart = {
+                            onDeleteHolding(holding.holding.id)
+                        },
+                        modifier = Modifier
+                            .padding(start = 16.dp, bottom = 8.dp)
+                    )
                 }
             }
         }
@@ -192,7 +196,9 @@ fun PortfolioSectionPreview() {
                     )
                 )
             ),
-            onNavigateToCoinDetail = { string: String, string1: String -> }
+            onNavigateToCoinDetail = { string: String, string1: String -> },
+            onEditHolding = { },
+            onDeleteHolding = { }
         )
     }
 }

@@ -49,8 +49,13 @@ fun HodlerNavGraph(
                     onAddHoldingClick = {
                         navController.navigate(Screen.AddHoldingScreen(holdingId = null))
                     },
+                    onEditHolding = { holdingId ->
+                        navController.navigate(Screen.AddHoldingScreen(holdingId = holdingId))
+                    },
                     onNavigateToCoinDetail = { coinId, symbol ->
-                        Screen.CoinDetail(coinId = coinId, coinSymbol = symbol)
+                        navController.navigate(
+                            Screen.CoinDetail(coinId = coinId, coinSymbol = symbol)
+                        )
                     }
                 )
             }

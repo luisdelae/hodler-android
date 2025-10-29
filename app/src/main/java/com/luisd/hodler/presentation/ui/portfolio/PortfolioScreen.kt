@@ -25,6 +25,7 @@ import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioSection
 fun PortfolioRoute(
     outerPaddingValues: PaddingValues,
     onAddHoldingClick: () -> Unit,
+    onEditHolding: (Long) -> Unit,
     onNavigateToCoinDetail: (String, String) -> Unit,
     viewModel: PortfolioViewModel = hiltViewModel(),
 ) {
@@ -35,7 +36,9 @@ fun PortfolioRoute(
         state = state,
         onRefresh = { viewModel.refreshPrices() },
         onAddHoldingClick = onAddHoldingClick,
-        onNavigateToCoinDetail = onNavigateToCoinDetail
+        onEditHolding = onEditHolding,
+        onDeleteHolding = viewModel::deleteHolding,
+        onNavigateToCoinDetail = onNavigateToCoinDetail,
     )
 }
 
@@ -45,6 +48,8 @@ fun PortfolioScreen(
     state: PortfolioUiState,
     onRefresh: () -> Unit,
     onAddHoldingClick: () -> Unit,
+    onEditHolding: (Long) -> Unit,
+    onDeleteHolding: (Long) -> Unit,
     onNavigateToCoinDetail: (String, String) -> Unit,
 ) {
     Scaffold(
@@ -95,6 +100,8 @@ fun PortfolioScreen(
                         state = state,
                         modifier = Modifier.padding(paddingValues),
                         onNavigateToCoinDetail = onNavigateToCoinDetail,
+                        onEditHolding = onEditHolding,
+                        onDeleteHolding = onDeleteHolding,
                     )
                 }
             }
