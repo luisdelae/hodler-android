@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -24,6 +25,18 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+
+        val apiKey = properties.getProperty("COINGECKO_API_KEY")
+            ?: System.getenv("COINGECKO_API_KEY")
+            ?: ""
+
+        buildConfigField("String", "COINGECKO_API_KEY", "\"$apiKey\"")
     }
 
     ksp {
@@ -46,6 +59,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 
