@@ -37,21 +37,20 @@ class CoinDetailViewModel @Inject constructor(
 
     private fun loadCoinDetails() {
         viewModelScope.launch {
-            repository.getCoinDetails(coinId).collect { result ->
-                when (result) {
-                    is Result.Error -> {
-                        _state.value = Error(result.exception.message ?: "Unknown error")
-                    }
+            val result = repository.getCoinDetails(coinId)
+            when (result) {
+                is Result.Error -> {
+                    _state.value = Error(result.exception.message ?: "Unknown error")
+                }
 
-                    Result.Loading -> _state.value = Loading
-                    is Result.Success -> {
-                        _state.value = Success(
-                            coinDetail = result.data,
-                            chartState = ChartState.Loading,
-                            timeRange = TimeRange.DAY_7
-                        )
-                        loadMarketData(TimeRange.DAY_7)
-                    }
+                Result.Loading -> _state.value = Loading
+                is Result.Success -> {
+                    _state.value = Success(
+                        coinDetail = result.data,
+                        chartState = ChartState.Loading,
+                        timeRange = TimeRange.DAY_7
+                    )
+                    loadMarketData(TimeRange.DAY_7)
                 }
             }
         }
@@ -59,27 +58,30 @@ class CoinDetailViewModel @Inject constructor(
 
     private fun loadMarketData(timeRange: TimeRange) {
         viewModelScope.launch {
-            repository.getMarketChart(coinId = coinId, timeRange.days).collect { result ->
-                _state.value = when (val currentState = _state.value) {
-                    is Success -> currentState.copy(
-                        chartState = when (result) {
-                            is Result.Error -> ChartState.Error(
-                                result.exception.message ?: "Chart error"
-                            )
+            val result = repository.getMarketChart(coinId = coinId, timeRange.days)
+            _state.value = when (val currentState = _state.value) {
+                is Success -> currentState.copy(
+                    chartState = when (result) {
+                        is Result.Error -> ChartState.Error(
+                            result.exception.message ?: "Chart error"
+                        )
 
-                            Result.Loading -> ChartState.Loading
-                            is Result.Success<*> -> ChartState.Success(result.data as MarketChart)
-                        },
-                        timeRange = timeRange
-                    )
+                        Result.Loading -> ChartState.Loading
+                        is Result.Success<*> -> ChartState.Success(result.data as MarketChart)
+                    },
+                    timeRange = timeRange
+                )
 
-                    else -> currentState // No update
-                }
+                else -> currentState
             }
         }
     }
 
     fun updateTimeRange(timeRange: TimeRange) {
         loadMarketData(timeRange)
+    }
+
+    fun refresh() {
+        loadCoinDetails()
     }
 }

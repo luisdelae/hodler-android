@@ -1,5 +1,7 @@
 package com.luisd.hodler.di
 
+import com.luisd.hodler.data.local.dao.CachedCoinDao
+import com.luisd.hodler.data.local.dao.CachedCoinDetailDao
 import com.luisd.hodler.data.local.dao.HoldingDao
 import com.luisd.hodler.data.remote.api.CoinGeckoApi
 import com.luisd.hodler.data.repository.CoinRepositoryImpl
@@ -19,8 +21,14 @@ object RepositoryModule {
     @Singleton
     fun provideCoinRepository(
         api: CoinGeckoApi,
+        cachedCoinDao: CachedCoinDao,
+        cachedCoinDetailDao: CachedCoinDetailDao,
     ): CoinRepository {
-        return CoinRepositoryImpl(api)
+        return CoinRepositoryImpl(
+            api,
+            cachedCoinDao,
+            cachedCoinDetailDao,
+        )
     }
 
     @Provides

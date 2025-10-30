@@ -30,27 +30,27 @@ class MarketViewModel @Inject constructor(
                 _uiState.update { (it as MarketUiState.Success).copy(isRefreshing = true) }
             }
 
-            repository.getMarketCoins().collect { result ->
-                _uiState.value = when (result) {
-                    is Result.Success -> {
-                        val currentState = _uiState.value
-                        MarketUiState.Success(
-                            coins = result.data,
-                            searchQuery = (currentState as? MarketUiState.Success)?.searchQuery
-                                ?: "",
-                            isSearchActive = (currentState as? MarketUiState.Success)?.isSearchActive
-                                ?: false,
-                            isRefreshing = false
-                        )
-                    }
+            val result = repository.getMarketCoins()
 
-                    is Result.Error -> MarketUiState.Error(
-                        message = result.exception.message ?: "Unknown error",
-                        cachedCoins = (_uiState.value as? MarketUiState.Success)?.coins
+            _uiState.value = when (result) {
+                is Result.Success -> {
+                    val currentState = _uiState.value
+                    MarketUiState.Success(
+                        coins = result.data,
+                        searchQuery = (currentState as? MarketUiState.Success)?.searchQuery
+                            ?: "",
+                        isSearchActive = (currentState as? MarketUiState.Success)?.isSearchActive
+                            ?: false,
+                        isRefreshing = false
                     )
-
-                    Result.Loading -> if (isRefresh) _uiState.value else MarketUiState.Loading
                 }
+
+                is Result.Error -> MarketUiState.Error(
+                    message = result.exception.message ?: "Unknown error",
+                    cachedCoins = (_uiState.value as? MarketUiState.Success)?.coins
+                )
+
+                Result.Loading -> if (isRefresh) _uiState.value else MarketUiState.Loading
             }
         }
     }

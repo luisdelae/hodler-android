@@ -1,12 +1,15 @@
 package com.luisd.hodler.presentation.ui.holdings
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.luisd.hodler.domain.model.Coin
 import com.luisd.hodler.domain.model.Holding
 import com.luisd.hodler.domain.model.Result
 import com.luisd.hodler.domain.repository.CoinRepository
 import com.luisd.hodler.domain.repository.PortfolioRepository
+import com.luisd.hodler.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,9 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.toRoute
-import com.luisd.hodler.presentation.navigation.Screen
 
 @HiltViewModel
 class AddHoldingViewModel @Inject constructor(
@@ -34,19 +34,18 @@ class AddHoldingViewModel @Inject constructor(
     init {
         when {
             holdingIdToEdit != null -> loadHoldingForEdit(holdingIdToEdit)
-            preselectedCoinId != null -> loadPreselectedCoin(preselectedCoinId)  // ADD THIS
+            preselectedCoinId != null -> loadPreselectedCoin(preselectedCoinId)
             else -> loadCoins()
         }
     }
 
     private fun loadCoins() {
         viewModelScope.launch {
-            coinRepository.getMarketCoins().collect { result ->
-                _uiState.value = when (result) {
-                    is Result.Success -> AddHoldingUiState.CoinSelection(coins = result.data)
-                    is Result.Error -> AddHoldingUiState.CoinSelection(error = "Unable to load coins")
-                    Result.Loading -> AddHoldingUiState.Loading
-                }
+            val result = coinRepository.getMarketCoins()
+            _uiState.value = when (result) {
+                is Result.Success -> AddHoldingUiState.CoinSelection(coins = result.data)
+                is Result.Error -> AddHoldingUiState.CoinSelection(error = "Unable to load coins")
+                Result.Loading -> AddHoldingUiState.Loading
             }
         }
     }
@@ -77,11 +76,13 @@ class AddHoldingViewModel @Inject constructor(
                         holdingId = holding.id
                     )
                 }
+
                 is Result.Error -> {
                     _uiState.value = AddHoldingUiState.CoinSelection(
                         error = "Failed to load holding: ${result.exception.message}"
                     )
                 }
+
                 Result.Loading -> { /* Won't happen */ }
             }
         }
@@ -89,19 +90,20 @@ class AddHoldingViewModel @Inject constructor(
 
     private fun loadPreselectedCoin(coinId: String) {
         viewModelScope.launch {
-            coinRepository.getCoinById(coinId).collect { result ->
-                when (result) {
-                    is Result.Success -> {
-                        _uiState.value = AddHoldingUiState.FormEntry(
-                            selectedCoin = result.data
-                        )
-                    }
-                    is Result.Error -> {
-                        loadCoins()
-                    }
-                    Result.Loading -> {
-                        _uiState.value = AddHoldingUiState.Loading
-                    }
+            val result = coinRepository.getCoinById(coinId)
+            when (result) {
+                is Result.Success -> {
+                    _uiState.value = AddHoldingUiState.FormEntry(
+                        selectedCoin = result.data
+                    )
+                }
+
+                is Result.Error -> {
+                    loadCoins()
+                }
+
+                Result.Loading -> {
+                    _uiState.value = AddHoldingUiState.Loading
                 }
             }
         }
@@ -177,6 +179,7 @@ class AddHoldingViewModel @Inject constructor(
                         AddHoldingUiState.SaveSuccess
                     }
                 }
+
                 is Result.Error -> {
                     _uiState.update {
                         currentState.copy(
@@ -185,13 +188,13 @@ class AddHoldingViewModel @Inject constructor(
                         )
                     }
                 }
+
                 Result.Loading -> { /* Won't happen */ }
             }
         }
     }
 
     private fun validateAmount(amount: String): String? {
-
         return when {
             amount.isBlank() -> "Amount is required"
             amount.toDoubleOrNull() == null -> "Amount must be a number"
