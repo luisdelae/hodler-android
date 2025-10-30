@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -53,6 +54,7 @@ fun PortfolioRoute(
         onEditHolding = onEditHolding,
         onDeleteHolding = viewModel::deleteHolding,
         onNavigateToCoinDetail = onNavigateToCoinDetail,
+        onToggleCoinExpansion = viewModel::toggleCoinExpansion,
     )
 }
 
@@ -65,22 +67,14 @@ fun PortfolioScreen(
     onEditHolding: (Long) -> Unit,
     onDeleteHolding: (Long) -> Unit,
     onNavigateToCoinDetail: (String, String) -> Unit,
+    onToggleCoinExpansion: (String) -> Unit,
 ) {
     Scaffold(
-        topBar = { TopBar() },
-        floatingActionButton = {
-            if (state is PortfolioUiState.Success) {
-                FloatingActionButton(
-                    onClick = { onAddHoldingClick() },
-                    modifier = Modifier
-                        .padding(bottom = outerPaddingValues.calculateBottomPadding())
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Add holding",
-                    )
-                }
-            }
+        topBar = {
+            TopBar(
+                state = state,
+                onAddHoldingClick = onAddHoldingClick
+            )
         }
     ) { paddingValues ->
         Box(
@@ -120,6 +114,7 @@ fun PortfolioScreen(
                         onNavigateToCoinDetail = onNavigateToCoinDetail,
                         onEditHolding = onEditHolding,
                         onDeleteHolding = onDeleteHolding,
+                        onToggleCoinExpansion = onToggleCoinExpansion,
                     )
                 }
             }
@@ -129,9 +124,24 @@ fun PortfolioScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(
+    state: PortfolioUiState,
+    onAddHoldingClick: () -> Unit,
+) {
     TopAppBar(
         title = { Text(text = "Portfolio") },
+        actions = {
+            if (state is PortfolioUiState.Success) {
+                IconButton(
+                    onClick = { onAddHoldingClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add holding",
+                    )
+                }
+            }
+        }
     )
 }
 
@@ -147,11 +157,12 @@ private fun PreviewPortfolioScreenLoading() {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
             state = PortfolioUiState.Loading,
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -164,11 +175,12 @@ private fun PreviewPortfolioScreenEmpty() {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
             state = PortfolioUiState.Empty,
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -181,11 +193,12 @@ private fun PreviewPortfolioScreenError() {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
             state = PortfolioUiState.Error("Failed to load portfolio data. Please try again."),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -203,11 +216,12 @@ private fun PreviewPortfolioScreenSuccessProfits() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -225,11 +239,12 @@ private fun PreviewPortfolioScreenSuccessLosses() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -247,11 +262,12 @@ private fun PreviewPortfolioScreenExpanded() {
                 isRefreshing = false,
                 expandedCoinIds = setOf("bitcoin", "ethereum")
             ),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -277,11 +293,12 @@ private fun PreviewPortfolioScreenSingleCoin() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -307,11 +324,12 @@ private fun PreviewPortfolioScreenManyCoins() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }
@@ -337,11 +355,12 @@ private fun PreviewPortfolioScreenMixedPerformance() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {},
-            onAddHoldingClick = {},
-            onEditHolding = {},
-            onDeleteHolding = {},
-            onNavigateToCoinDetail = { _, _ -> }
+            onRefresh = {  },
+            onAddHoldingClick = {  },
+            onEditHolding = {  },
+            onDeleteHolding = {  },
+            onNavigateToCoinDetail = { _, _ -> },
+            onToggleCoinExpansion = {  },
         )
     }
 }

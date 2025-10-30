@@ -10,11 +10,14 @@ import com.luisd.hodler.domain.usecase.ObservePortfolioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,6 +28,7 @@ class PortfolioViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
+    private val expandedCoinIds = MutableStateFlow<Set<String>>(emptySet())
 
     init {
         viewModelScope.launch {
@@ -49,10 +53,18 @@ class PortfolioViewModel @Inject constructor(
                     } else {
                         PortfolioUiState.Success(
                             summary = aggregateSummary(result.data),
-                            holdings = combineHoldingsToGroup(result.data)
+                            holdings = combineHoldingsToGroup(result.data),
+                            expandedCoinIds = emptySet()
                         )
                     }
                 }
+            }
+        }
+        .combine(expandedCoinIds) { state, expanded ->
+            if (state is PortfolioUiState.Success) {
+                state.copy(expandedCoinIds = expanded)
+            } else {
+                state
             }
         }
         .stateIn(
@@ -135,6 +147,16 @@ class PortfolioViewModel @Inject constructor(
     fun deleteHolding(id: Long) {
         viewModelScope.launch {
             portfolioRepository.deleteHoldingById(id)
+        }
+    }
+
+    fun toggleCoinExpansion(coinId: String) {
+        expandedCoinIds.update { currentExpanded ->
+            if (currentExpanded.contains(coinId)) {
+                currentExpanded - coinId
+            } else {
+                currentExpanded + coinId
+            }
         }
     }
 }

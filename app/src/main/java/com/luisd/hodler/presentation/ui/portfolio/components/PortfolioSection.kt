@@ -27,6 +27,7 @@ fun PortfolioSection(
     onNavigateToCoinDetail: (String, String) -> Unit,
     onEditHolding: (Long) -> Unit,
     onDeleteHolding: (Long) -> Unit,
+    onToggleCoinExpansion: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val expandedCoinIds = remember { mutableStateSetOf<String>() }
@@ -53,18 +54,12 @@ fun PortfolioSection(
             item(key = coinGroup.coinId) {
                 CoinGroupCard(
                     coinGroup = coinGroup,
-                    isExpanded = expandedCoinIds.contains(coinGroup.coinId),
-                    onToggle = {
-                        if (expandedCoinIds.contains(coinGroup.coinId)) {
-                            expandedCoinIds.remove(coinGroup.coinId)
-                        } else {
-                            expandedCoinIds.add(coinGroup.coinId)
-                        }
-                    },
+                    isExpanded = state.expandedCoinIds.contains(coinGroup.coinId),
+                    onToggle = { onToggleCoinExpansion(coinGroup.coinId) },
                 )
             }
 
-            if (expandedCoinIds.contains(coinGroup.coinId)) {
+            if (state.expandedCoinIds.contains(coinGroup.coinId)) {
                 items(
                     items = coinGroup.holdings,
                     key = { it.holding.id }
@@ -197,6 +192,7 @@ fun PortfolioSectionPreview() {
                 )
             ),
             onNavigateToCoinDetail = { string: String, string1: String -> },
+            onToggleCoinExpansion = {  },
             onEditHolding = { },
             onDeleteHolding = { }
         )
