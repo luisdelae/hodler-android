@@ -54,7 +54,9 @@ class PortfolioViewModel @Inject constructor(
                         PortfolioUiState.Success(
                             summary = aggregateSummary(result.data),
                             holdings = combineHoldingsToGroup(result.data),
-                            expandedCoinIds = emptySet()
+                            expandedCoinIds = emptySet(),
+                            isFromCache = result.isFromCache,
+                            lastUpdated = result.lastUpdated,
                         )
                     }
                 }

@@ -41,13 +41,14 @@ class MarketViewModel @Inject constructor(
                             ?: "",
                         isSearchActive = (currentState as? MarketUiState.Success)?.isSearchActive
                             ?: false,
-                        isRefreshing = false
+                        isRefreshing = false,
+                        isFromCache = result.isFromCache,
+                        lastUpdated = result.lastUpdated,
                     )
                 }
 
                 is Result.Error -> MarketUiState.Error(
                     message = result.exception.message ?: "Unknown error",
-                    cachedCoins = (_uiState.value as? MarketUiState.Success)?.coins
                 )
 
                 Result.Loading -> if (isRefresh) _uiState.value else MarketUiState.Loading

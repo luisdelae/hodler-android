@@ -1,7 +1,6 @@
 package com.luisd.hodler.presentation.ui.details.components
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,7 +39,7 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun CoinDetailChartSection(
-    state: ChartState,
+    uiState: ChartState,
     timeRange: TimeRange,
     modifier: Modifier = Modifier,
 ) {
@@ -49,9 +48,9 @@ fun CoinDetailChartSection(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        when (state) {
+        when (uiState) {
             is ChartState.Error -> ErrorContent(
-                message = state.message,
+                message = uiState.message,
                 onRefresh = null,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -63,7 +62,7 @@ fun CoinDetailChartSection(
 
             is ChartState.Success -> {
                 CoinDetailLineChart(
-                    data = state.chart,
+                    data = uiState.chart,
                     timeRange = timeRange,
                     modifier = modifier,
                 )
@@ -190,8 +189,7 @@ fun CoinDetailLineChart(
                 }
             }
         } catch (e: Exception) {
-            chartError = "Failed to load chart"
-            // TODO: Log after Trimber impl
+            chartError = "Failed to load chart\n$e"
         }
     }
 

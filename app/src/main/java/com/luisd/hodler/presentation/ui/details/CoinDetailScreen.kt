@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luisd.hodler.presentation.theme.HodlerTheme
+import com.luisd.hodler.presentation.ui.components.CacheIndicatorBanner
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.details.components.CoinDetailCard
@@ -46,13 +47,13 @@ fun CoinDetailRoute(
     onAddToPortfolio: (String) -> Unit,
     viewModel: CoinDetailViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
     val onTimeRangeChange = remember {
         { timeRange: TimeRange -> viewModel.updateTimeRange(timeRange) }
     }
 
     DetailScreen(
-        state = state,
+        uiState = uiState,
         coinSymbol = viewModel.coinSymbol,
         onRefresh = viewModel::refresh,
         onNavigateBack = onNavigateBack,
@@ -64,7 +65,7 @@ fun CoinDetailRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    state: CoinDetailUiState,
+    uiState: CoinDetailUiState,
     coinSymbol: String,
     onRefresh: () -> Unit,
     onNavigateBack: () -> Unit,
@@ -73,29 +74,38 @@ fun DetailScreen(
 ) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = coinSymbol.uppercase(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = coinSymbol.uppercase(),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                    }
-                },
-            )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                )
+
+                if (uiState is CoinDetailUiState.Success && uiState.isFromCache) {
+                    CacheIndicatorBanner(
+                        lastUpdated = uiState.lastUpdated,
+                        onRefresh = onRefresh
+                    )
+                }
+            }
         }
     ) { paddingValues ->
-        when (state) {
+        when (uiState) {
             is CoinDetailUiState.Error -> {
                 ErrorContent(
-                    message = state.message,
+                    message = uiState.message,
                     onRefresh = onRefresh,
                     modifier = Modifier
                         .fillMaxSize()
@@ -119,24 +129,24 @@ fun DetailScreen(
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    CoinDetailCard(coinDetails = state.coinDetail)
+                    CoinDetailCard(coinDetails = uiState.coinDetail)
 
                     TimeRangeChips(
-                        timeRange = state.timeRange,
+                        timeRange = uiState.timeRange,
                         onSelectedTimeRangeChange = onSelectedTimeRangeChange
                     )
 
                     CoinDetailChartSection(
-                        state = state.chartState,
-                        timeRange = state.timeRange,
+                        uiState = uiState.chartState,
+                        timeRange = uiState.timeRange,
                         modifier = Modifier
                             .padding(paddingValues),
                     )
 
-                    CoinDetailStatsSection(coinDetail = state.coinDetail)
+                    CoinDetailStatsSection(coinDetail = uiState.coinDetail)
 
                     TextButton(
-                        onClick = { onAddToPortfolio(state.coinDetail.id) },
+                        onClick = { onAddToPortfolio(uiState.coinDetail.id) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 32.dp),
@@ -167,7 +177,7 @@ fun DetailScreen(
 private fun PreviewDetailScreenLoading() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Loading,
+            uiState = CoinDetailUiState.Loading,
             coinSymbol = "BTC",
             onRefresh = {},
             onNavigateBack = {},
@@ -183,7 +193,7 @@ private fun PreviewDetailScreenLoading() {
 private fun PreviewDetailScreenError() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Error("Failed to load coin details. Please check your connection."),
+            uiState = CoinDetailUiState.Error("Failed to load coin details. Please check your connection."),
             coinSymbol = "BTC",
             onRefresh = {},
             onNavigateBack = {},
@@ -203,7 +213,7 @@ private fun PreviewDetailScreenError() {
 private fun PreviewDetailScreenSuccessChartLoading() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleBitcoinDetail(),
                 chartState = ChartState.Loading,
                 timeRange = TimeRange.DAY_1
@@ -227,7 +237,7 @@ private fun PreviewDetailScreenSuccessChartLoading() {
 private fun PreviewDetailScreenSuccess24H() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleBitcoinDetail(),
                 chartState = ChartState.Success(getSampleMarketChart24H()),
                 timeRange = TimeRange.DAY_1
@@ -251,7 +261,7 @@ private fun PreviewDetailScreenSuccess24H() {
 private fun PreviewDetailScreenSuccessChartError() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleBitcoinDetail(),
                 chartState = ChartState.Error("Failed to load chart data"),
                 timeRange = TimeRange.DAY_1
@@ -275,7 +285,7 @@ private fun PreviewDetailScreenSuccessChartError() {
 private fun PreviewDetailScreenEthereum() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleEthereumDetail(),
                 chartState = ChartState.Success(getSampleMarketChart24H()),
                 timeRange = TimeRange.DAY_7
@@ -299,7 +309,7 @@ private fun PreviewDetailScreenEthereum() {
 private fun PreviewDetailScreenNegativeChange() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleCoinWithNegativeChange(),
                 chartState = ChartState.Success(getSampleMarketChart24H()),
                 timeRange = TimeRange.DAY_1
@@ -323,7 +333,7 @@ private fun PreviewDetailScreenNegativeChange() {
 private fun PreviewDetailScreenNullSupply() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleCoinWithNullSupply(),
                 chartState = ChartState.Success(getSampleMarketChart24H()),
                 timeRange = TimeRange.DAY_30
@@ -347,7 +357,7 @@ private fun PreviewDetailScreenNullSupply() {
 private fun PreviewDetailScreenLongSymbol() {
     HodlerTheme {
         DetailScreen(
-            state = CoinDetailUiState.Success(
+            uiState = CoinDetailUiState.Success(
                 coinDetail = getSampleBitcoinDetail(),
                 chartState = ChartState.Success(getSampleMarketChart24H()),
                 timeRange = TimeRange.DAY_1

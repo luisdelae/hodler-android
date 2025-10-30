@@ -2,6 +2,7 @@ package com.luisd.hodler.presentation.ui.market
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,8 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.luisd.hodler.domain.model.Coin
 import com.luisd.hodler.presentation.theme.HodlerTheme
+import com.luisd.hodler.presentation.ui.components.CacheIndicatorBanner
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.market.components.CoinList
@@ -65,12 +66,21 @@ fun MarketScreen(
 
     Scaffold(
         topBar = {
-            TopBar(
-                searchQuery = (uiState as? MarketUiState.Success)?.searchQuery ?: "",
-                isSearchActive = (uiState as? MarketUiState.Success)?.isSearchActive ?: false,
-                onSearchQueryChange = onSearchQueryChange,
-                onSearchActiveChange = onSearchActiveChange
-            )
+            Column {
+                TopBar(
+                    searchQuery = (uiState as? MarketUiState.Success)?.searchQuery ?: "",
+                    isSearchActive = (uiState as? MarketUiState.Success)?.isSearchActive ?: false,
+                    onSearchQueryChange = onSearchQueryChange,
+                    onSearchActiveChange = onSearchActiveChange
+                )
+
+                if (uiState is MarketUiState.Success && uiState.isFromCache) {
+                    CacheIndicatorBanner(
+                        lastUpdated = uiState.lastUpdated,
+                        onRefresh = onRefresh
+                    )
+                }
+            }
         },
     ) { paddingValues ->
         PullToRefreshBox(
@@ -224,6 +234,28 @@ private fun PreviewMarketScreenSuccess() {
                 searchQuery = "",
                 isSearchActive = false,
                 isRefreshing = false
+            ),
+            onSearchQueryChange = {},
+            onSearchActiveChange = {},
+            onRefresh = {},
+            onCoinClick = { _, _ -> }
+        )
+    }
+}
+
+@Preview(name = "Light: Market - Success State with cache", showBackground = true)
+@Preview(name = "Dark: Market - Success State with cache", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewMarketScreenSuccess_Cache() {
+    HodlerTheme {
+        MarketScreen(
+            outerPaddingValues = PaddingValues(0.dp),
+            uiState = MarketUiState.Success(
+                coins = getSampleCoins(),
+                searchQuery = "",
+                isSearchActive = false,
+                isRefreshing = false,
+                isFromCache = true,
             ),
             onSearchQueryChange = {},
             onSearchActiveChange = {},

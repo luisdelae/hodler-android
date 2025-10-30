@@ -9,7 +9,9 @@ sealed interface MarketUiState {
         val coins: List<Coin>,
         val searchQuery: String = "",
         val isSearchActive: Boolean = false,
-        val isRefreshing: Boolean = false
+        val isRefreshing: Boolean = false,
+        val isFromCache: Boolean = false,
+        val lastUpdated: Long? = null,
     ) : MarketUiState {
         val displayedCoins: List<Coin>
             get() = if (searchQuery.isBlank()) {
@@ -22,8 +24,5 @@ sealed interface MarketUiState {
             }
     }
 
-    data class Error(
-        val message: String,
-        val cachedCoins: List<Coin>? = null
-    ) : MarketUiState
+    data class Error(val message: String) : MarketUiState
 }

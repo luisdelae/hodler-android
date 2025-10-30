@@ -48,7 +48,9 @@ class CoinDetailViewModel @Inject constructor(
                     _state.value = Success(
                         coinDetail = result.data,
                         chartState = ChartState.Loading,
-                        timeRange = TimeRange.DAY_7
+                        timeRange = TimeRange.DAY_7,
+                        isFromCache = result.isFromCache,
+                        lastUpdated = result.lastUpdated,
                     )
                     loadMarketData(TimeRange.DAY_7)
                 }

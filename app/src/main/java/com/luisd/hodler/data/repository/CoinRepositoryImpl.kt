@@ -19,11 +19,10 @@ import javax.inject.Inject
  * Implementation of CoinRepository with offline-first caching strategy
  *
  * Strategy:
- * 1. Immediately emit cached data if available
- * 2. Fetch fresh data from API in background
- * 3. Update cache with fresh data
- * 4. If API fails and cache exists, keep showing cached data
- * 5. Only show error if API fails AND no cache exists
+ * 1. Check cache for existing data
+ * 2. Attempt to fetch fresh data from API
+ * 3. On success: Update cache and return fresh data with isFromCache=false
+ * 4. On failure: Return cached data with isFromCache=true if available, otherwise error
  */
 class CoinRepositoryImpl @Inject constructor(
     private val api: CoinGeckoApi,
@@ -35,14 +34,24 @@ class CoinRepositoryImpl @Inject constructor(
      */
     override suspend fun getMarketCoins(): Result<List<Coin>> {
         val cached = cachedCoinDao.getAllCachedCoins().first()
+        val cacheTimestamp = cachedCoinDao.getLastUpdateTime()
 
         return try {
             val apiData = api.getMarketCoins()
             cachedCoinDao.insertAllCoins(apiData.map { it.toCachedEntity() })
-            Result.Success(apiData.map { it.toDomain() })
+
+            Result.Success(
+                data = apiData.map { it.toDomain() },
+                isFromCache = false,
+                lastUpdated = System.currentTimeMillis()
+            )
         } catch (e: Exception) {
             if (cached.isNotEmpty()) {
-                Result.Success(cached.map { it.toDomain() })
+                Result.Success(
+                    data = cached.map { it.toDomain() },
+                    isFromCache = true,
+                    lastUpdated = cacheTimestamp
+                )
             } else {
                 Result.Error(e)
             }
@@ -54,14 +63,24 @@ class CoinRepositoryImpl @Inject constructor(
      */
     override suspend fun getCoinDetails(coinId: String): Result<CoinDetail> {
         val cached = cachedCoinDetailDao.getCachedCoinDetail(coinId).first()
+        val cacheTimestamp = cachedCoinDetailDao.getLastUpdateTime(coinId)
 
         return try {
             val apiData = api.getCoinDetails(coinId)
             cachedCoinDetailDao.insertCoinDetail(apiData.toCachedEntity())
-            Result.Success(apiData.toDomain())
+
+            Result.Success(
+                data = apiData.toDomain(),
+                isFromCache = false,
+                lastUpdated = System.currentTimeMillis()
+            )
         } catch (e: Exception) {
             if (cached != null) {
-                Result.Success(cached.toDomain())
+                Result.Success(
+                    data = cached.toDomain(),
+                    isFromCache = true,
+                    lastUpdated = cacheTimestamp
+                )
             } else {
                 Result.Error(e)
             }
@@ -73,6 +92,7 @@ class CoinRepositoryImpl @Inject constructor(
      */
     override suspend fun getCoinById(coinId: String): Result<Coin> {
         val cached = cachedCoinDao.getCachedCoinById(coinId).first()
+        val cacheTimestamp = cached?.lastUpdated
 
         return try {
             val response = api.getMarketCoins(coinIds = coinId, perPage = 1)
@@ -80,17 +100,29 @@ class CoinRepositoryImpl @Inject constructor(
 
             if (coinDto != null) {
                 cachedCoinDao.insertAllCoins(listOf(coinDto.toCachedEntity()))
-                Result.Success(coinDto.toDomain())
+                Result.Success(
+                    data = coinDto.toDomain(),
+                    isFromCache = false,
+                    lastUpdated = System.currentTimeMillis()
+                )
             } else {
                 if (cached != null) {
-                    Result.Success(cached.toDomain())
+                    Result.Success(
+                        data = cached.toDomain(),
+                        isFromCache = true,
+                        lastUpdated = cacheTimestamp
+                    )
                 } else {
                     Result.Error(Exception("Coin not found"))
                 }
             }
         } catch (e: Exception) {
             if (cached != null) {
-                Result.Success(cached.toDomain())
+                Result.Success(
+                    data = cached.toDomain(),
+                    isFromCache = true,
+                    lastUpdated = cacheTimestamp
+                )
             } else {
                 Result.Error(e)
             }
@@ -100,7 +132,11 @@ class CoinRepositoryImpl @Inject constructor(
     override suspend fun getMarketChart(coinId: String, days: Int): Result<MarketChart> {
         return try {
             val marketChart = api.getCoinMarketChart(coinId = coinId, days = days.toString())
-            Result.Success(marketChart.toMarketChart())
+            Result.Success(
+                data = marketChart.toMarketChart(),
+                isFromCache = false,
+                lastUpdated = System.currentTimeMillis()
+            )
         } catch (e: Exception) {
             Result.Error(e)
         }
@@ -117,7 +153,13 @@ class CoinRepositoryImpl @Inject constructor(
             val prices = response.mapValues { (_, currencies) ->
                 currencies.toDomain()
             }
-            Result.Success(prices)
+
+            Result.Success(
+                data = prices,
+                isFromCache = false,
+                lastUpdated = System.currentTimeMillis()
+            )
+
         } catch (e: Exception) {
             val allCached = cachedCoinDao.getAllCachedCoins().first()
             val cachedPrices = allCached
@@ -129,8 +171,14 @@ class CoinRepositoryImpl @Inject constructor(
                     )
                 }
 
+            val cacheTimestamp = cachedCoinDao.getLastUpdateTime()
+
             if (cachedPrices.isNotEmpty()) {
-                Result.Success(cachedPrices)
+                Result.Success(
+                    data = cachedPrices,
+                    isFromCache = true,
+                    lastUpdated = cacheTimestamp
+                )
             } else {
                 Result.Error(e)
             }

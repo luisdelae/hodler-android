@@ -2,13 +2,13 @@ package com.luisd.hodler.presentation.ui.portfolio
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -23,6 +23,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luisd.hodler.domain.model.PortfolioSummary
 import com.luisd.hodler.presentation.theme.HodlerTheme
+import com.luisd.hodler.presentation.ui.components.CacheIndicatorBanner
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.portfolio.components.PortfolioEmptySection
@@ -44,11 +45,11 @@ fun PortfolioRoute(
     onNavigateToCoinDetail: (String, String) -> Unit,
     viewModel: PortfolioViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     PortfolioScreen(
         outerPaddingValues = outerPaddingValues,
-        state = state,
+        uiState = uiState,
         onRefresh = { viewModel.refreshPrices() },
         onAddHoldingClick = onAddHoldingClick,
         onEditHolding = onEditHolding,
@@ -61,7 +62,7 @@ fun PortfolioRoute(
 @Composable
 fun PortfolioScreen(
     outerPaddingValues: PaddingValues,
-    state: PortfolioUiState,
+    uiState: PortfolioUiState,
     onRefresh: () -> Unit,
     onAddHoldingClick: () -> Unit,
     onEditHolding: (Long) -> Unit,
@@ -71,16 +72,25 @@ fun PortfolioScreen(
 ) {
     Scaffold(
         topBar = {
-            TopBar(
-                state = state,
-                onAddHoldingClick = onAddHoldingClick
-            )
+            Column {
+                TopBar(
+                    uiState = uiState,
+                    onAddHoldingClick = onAddHoldingClick
+                )
+
+                if (uiState is PortfolioUiState.Success && uiState.isFromCache) {
+                    CacheIndicatorBanner(
+                        lastUpdated = uiState.lastUpdated,
+                        onRefresh = onRefresh
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         Box(
             modifier = Modifier.padding(outerPaddingValues)
         ) {
-            when (state) {
+            when (uiState) {
                 is PortfolioUiState.Loading -> {
                     LoadingContent(
                         message = "Loading portfolio...",
@@ -109,7 +119,7 @@ fun PortfolioScreen(
 
                 is PortfolioUiState.Success -> {
                     PortfolioSection(
-                        state = state,
+                        uiState = uiState,
                         modifier = Modifier.padding(paddingValues),
                         onNavigateToCoinDetail = onNavigateToCoinDetail,
                         onEditHolding = onEditHolding,
@@ -125,13 +135,13 @@ fun PortfolioScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    state: PortfolioUiState,
+    uiState: PortfolioUiState,
     onAddHoldingClick: () -> Unit,
 ) {
     TopAppBar(
         title = { Text(text = "Portfolio") },
         actions = {
-            if (state is PortfolioUiState.Success) {
+            if (uiState is PortfolioUiState.Success) {
                 IconButton(
                     onClick = { onAddHoldingClick() }
                 ) {
@@ -150,19 +160,23 @@ fun TopBar(
 // ============================================================
 
 @Preview(name = "Light: Portfolio - Loading State", showBackground = true)
-@Preview(name = "Dark: Portfolio - Loading State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Dark: Portfolio - Loading State",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 private fun PreviewPortfolioScreenLoading() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Loading,
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            uiState = PortfolioUiState.Loading,
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
@@ -174,13 +188,13 @@ private fun PreviewPortfolioScreenEmpty() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Empty,
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            uiState = PortfolioUiState.Empty,
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
@@ -192,82 +206,94 @@ private fun PreviewPortfolioScreenError() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Error("Failed to load portfolio data. Please try again."),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            uiState = PortfolioUiState.Error("Failed to load portfolio data. Please try again."),
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
 
 @Preview(name = "Light: Portfolio - Success with profits", showBackground = true)
-@Preview(name = "Dark: Portfolio - Success with profits", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Dark: Portfolio - Success with profits",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 private fun PreviewPortfolioScreenSuccessProfits() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Success(
+            uiState = PortfolioUiState.Success(
                 summary = getSamplePortfolioSummaryWithProfits(),
                 holdings = getSampleCoinGroupsWithProfits(),
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
 
 @Preview(name = "Light: Portfolio - Success with losses", showBackground = true)
-@Preview(name = "Dark: Portfolio - Success with losses", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Dark: Portfolio - Success with losses",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 private fun PreviewPortfolioScreenSuccessLosses() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Success(
+            uiState = PortfolioUiState.Success(
                 summary = getSamplePortfolioSummaryWithLosses(),
                 holdings = getSampleCoinGroupsWithLosses(),
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
 
 @Preview(name = "Light: Portfolio - Success with expanded coins", showBackground = true)
-@Preview(name = "Dark: Portfolio - Success with expanded coins", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Dark: Portfolio - Success with expanded coins",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 private fun PreviewPortfolioScreenExpanded() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Success(
+            uiState = PortfolioUiState.Success(
                 summary = getSamplePortfolioSummaryWithProfits(),
                 holdings = getSampleCoinGroupsWithMultipleHoldings(),
                 isRefreshing = false,
                 expandedCoinIds = setOf("bitcoin", "ethereum")
             ),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
@@ -279,7 +305,7 @@ private fun PreviewPortfolioScreenSingleCoin() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Success(
+            uiState = PortfolioUiState.Success(
                 summary = PortfolioSummary(
                     coinsOwned = 1,
                     totalValue = 67234.56,
@@ -293,12 +319,12 @@ private fun PreviewPortfolioScreenSingleCoin() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
@@ -310,7 +336,7 @@ private fun PreviewPortfolioScreenManyCoins() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Success(
+            uiState = PortfolioUiState.Success(
                 summary = PortfolioSummary(
                     coinsOwned = 10,
                     totalValue = 125000.0,
@@ -324,24 +350,28 @@ private fun PreviewPortfolioScreenManyCoins() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }
 
 @Preview(name = "Light: Portfolio - Mixed performance", showBackground = true)
-@Preview(name = "Dark: Portfolio - Mixed performance", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Dark: Portfolio - Mixed performance",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 private fun PreviewPortfolioScreenMixedPerformance() {
     HodlerTheme {
         PortfolioScreen(
             outerPaddingValues = PaddingValues(0.dp),
-            state = PortfolioUiState.Success(
+            uiState = PortfolioUiState.Success(
                 summary = PortfolioSummary(
                     coinsOwned = 5,
                     totalValue = 85000.0,
@@ -355,12 +385,12 @@ private fun PreviewPortfolioScreenMixedPerformance() {
                 isRefreshing = false,
                 expandedCoinIds = emptySet()
             ),
-            onRefresh = {  },
-            onAddHoldingClick = {  },
-            onEditHolding = {  },
-            onDeleteHolding = {  },
+            onRefresh = { },
+            onAddHoldingClick = { },
+            onEditHolding = { },
+            onDeleteHolding = { },
             onNavigateToCoinDetail = { _, _ -> },
-            onToggleCoinExpansion = {  },
+            onToggleCoinExpansion = { },
         )
     }
 }

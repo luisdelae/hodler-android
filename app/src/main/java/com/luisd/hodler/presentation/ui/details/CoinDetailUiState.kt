@@ -9,7 +9,9 @@ sealed class CoinDetailUiState {
     data class Success(
         val coinDetail: CoinDetail,
         val chartState: ChartState,
-        val timeRange: TimeRange
+        val timeRange: TimeRange,
+        val isFromCache: Boolean = false,
+        val lastUpdated: Long? = null,
     ) : CoinDetailUiState()
 }
 

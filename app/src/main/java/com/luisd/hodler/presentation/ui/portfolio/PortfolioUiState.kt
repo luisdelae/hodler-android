@@ -11,7 +11,9 @@ sealed interface PortfolioUiState {
         val summary: PortfolioSummary,
         val holdings: List<CoinGroup>,
         val isRefreshing: Boolean = false,
-        val expandedCoinIds: Set<String> = emptySet()
+        val expandedCoinIds: Set<String> = emptySet(),
+        val isFromCache: Boolean = false,
+        val lastUpdated: Long? = null,
     ) : PortfolioUiState
 
     data class Error(

@@ -41,4 +41,11 @@ interface CachedCoinDao {
      */
     @Query("DELETE FROM cached_coins WHERE lastUpdated < :timestamp")
     suspend fun deleteOldCoins(timestamp: Long)
+
+    /**
+     * Get timestamp of last cache update.
+     * @return Timestamp of most recent cached coin, or null if cache is empty
+     */
+    @Query("SELECT MAX(lastUpdated) FROM cached_coins")
+    suspend fun getLastUpdateTime(): Long?
 }
