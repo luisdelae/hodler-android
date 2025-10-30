@@ -22,6 +22,8 @@ import com.luisd.hodler.presentation.ui.portfolio.PortfolioUiState
 @Composable
 fun PortfolioSection(
     uiState: PortfolioUiState.Success,
+    paddingValues: PaddingValues,
+    outerPaddingValues: PaddingValues,
     onNavigateToCoinDetail: (String, String) -> Unit,
     onEditHolding: (Long) -> Unit,
     onDeleteHolding: (Long) -> Unit,
@@ -30,11 +32,17 @@ fun PortfolioSection(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = PaddingValues(
+            top = paddingValues.calculateTopPadding(),
+            bottom = paddingValues.calculateBottomPadding() + outerPaddingValues.calculateBottomPadding(),
+            start = 16.dp,
+            end = 16.dp
+        ),
     ) {
         item {
             PortfolioSummarySection(
                 portfolioSummary = uiState.summary,
+                modifier = Modifier.padding(vertical = 8.dp)
             )
         }
 
@@ -190,7 +198,9 @@ fun PortfolioSectionPreview() {
             onNavigateToCoinDetail = { string: String, string1: String -> },
             onToggleCoinExpansion = { },
             onEditHolding = { },
-            onDeleteHolding = { }
+            onDeleteHolding = { },
+            paddingValues = PaddingValues(),
+            outerPaddingValues = PaddingValues(),
         )
     }
 }

@@ -2,6 +2,7 @@ package com.luisd.hodler.presentation.ui.market.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,14 +36,15 @@ import com.luisd.hodler.presentation.ui.util.toUsdFormat
 
 @Composable
 fun CoinList(
-    modifier: Modifier,
+    paddingValues: PaddingValues,
     coins: List<Coin>,
     onCoinClick: (String, String) -> Unit
 ) {
     LazyColumn(
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxSize()
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxSize(),
+        contentPadding = paddingValues
     ) {
         items(coins) { coin ->
             CoinListItem(

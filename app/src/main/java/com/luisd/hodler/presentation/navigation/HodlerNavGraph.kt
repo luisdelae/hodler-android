@@ -25,7 +25,6 @@ fun HodlerNavGraph(
         ) {
             composable<Screen.Market> {
                 MarketRoute(
-                    outerPaddingValues = paddingValues,
                     onCoinClick = { coinId, coinSymbol ->
                         navController.navigate(
                             Screen.CoinDetail(coinId = coinId, coinSymbol = coinSymbol)
