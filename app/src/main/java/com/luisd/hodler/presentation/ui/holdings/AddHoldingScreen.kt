@@ -1,3 +1,4 @@
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,11 +18,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luisd.hodler.domain.model.Coin
+import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.holdings.AddHoldingUiState
 import com.luisd.hodler.presentation.ui.holdings.AddHoldingViewModel
 import com.luisd.hodler.presentation.ui.holdings.components.CoinSelectionContent
 import com.luisd.hodler.presentation.ui.holdings.components.HoldingFormContent
+import com.luisd.hodler.presentation.ui.holdings.components.getSampleBitcoinForForm
+import com.luisd.hodler.presentation.ui.holdings.components.getSampleCoinsForSelection
+import com.luisd.hodler.presentation.ui.holdings.components.getSampleEthereumForForm
 
 @Composable
 fun AddHoldingRoute(
@@ -82,7 +87,9 @@ private fun AddHoldingScreen(
                 is AddHoldingUiState.Loading -> {
                     LoadingContent(
                         message = "Loading coins...",
-                        paddingValues = paddingValues
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
                     )
                 }
 
@@ -90,8 +97,10 @@ private fun AddHoldingScreen(
                     CoinSelectionContent(
                         coins = uiState.coins,
                         error = uiState.error,
-                        paddingValues = paddingValues,
                         onCoinSelected = onCoinSelected,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
                     )
                 }
 
@@ -113,10 +122,15 @@ private fun AddHoldingScreen(
     }
 }
 
-@Preview(showBackground = true)
+// ============================================================
+// AddHoldingScreen Previews
+// ============================================================
+
+@Preview(name = "Light: AddHolding - Loading State", showBackground = true)
+@Preview(name = "Dark: AddHolding - Loading State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_Loading() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.Loading,
             onNavigateBack = {},
@@ -129,44 +143,14 @@ private fun AddHoldingScreenPreview_Loading() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - Coin Selection State", showBackground = true)
+@Preview(name = "Dark: AddHolding - Coin Selection State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_CoinSelection() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.CoinSelection(
-                coins = listOf(
-                    Coin(
-                        id = "bitcoin",
-                        symbol = "BTC",
-                        name = "Bitcoin",
-                        image = "",
-                        currentPrice = 54231.12,
-                        priceChangePercentage24h = 2.5,
-                        marketCap = 1000000000L,
-                        marketCapRank = 1
-                    ),
-                    Coin(
-                        id = "ethereum",
-                        symbol = "ETH",
-                        name = "Ethereum",
-                        image = "",
-                        currentPrice = 4012.58,
-                        priceChangePercentage24h = -1.5,
-                        marketCap = 500000000L,
-                        marketCapRank = 2
-                    ),
-                    Coin(
-                        id = "cardano",
-                        symbol = "ADA",
-                        name = "Cardano",
-                        image = "",
-                        currentPrice = 0.52,
-                        priceChangePercentage24h = 3.2,
-                        marketCap = 18000000L,
-                        marketCapRank = 8
-                    )
-                )
+                coins = getSampleCoinsForSelection()
             ),
             onNavigateBack = {},
             onCoinSelected = {},
@@ -178,10 +162,11 @@ private fun AddHoldingScreenPreview_CoinSelection() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - Error State", showBackground = true)
+@Preview(name = "Dark: AddHolding - Error State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_CoinSelectionError() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.CoinSelection(
                 coins = emptyList(),
@@ -197,22 +182,14 @@ private fun AddHoldingScreenPreview_CoinSelectionError() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - FormEntry State Add", showBackground = true)
+@Preview(name = "Dark: AddHolding - FormEntry State Add", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_FormAdd() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.FormEntry(
-                selectedCoin = Coin(
-                    id = "bitcoin",
-                    symbol = "BTC",
-                    name = "Bitcoin",
-                    image = "",
-                    currentPrice = 54231.12,
-                    priceChangePercentage24h = 2.5,
-                    marketCap = 1000000000L,
-                    marketCapRank = 1
-                ),
+                selectedCoin = getSampleBitcoinForForm(),
                 amount = "0.5",
                 purchasePrice = "48500",
                 purchaseDate = System.currentTimeMillis()
@@ -227,22 +204,14 @@ private fun AddHoldingScreenPreview_FormAdd() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - FormEntry State Edit", showBackground = true)
+@Preview(name = "Dark: AddHolding - FormEntry State Edit", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_FormEdit() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.FormEntry(
-                selectedCoin = Coin(
-                    id = "ethereum",
-                    symbol = "ETH",
-                    name = "Ethereum",
-                    image = "",
-                    currentPrice = 4012.58,
-                    priceChangePercentage24h = -1.5,
-                    marketCap = 500000000L,
-                    marketCapRank = 2
-                ),
+                selectedCoin = getSampleEthereumForForm(),
                 amount = "2.5",
                 purchasePrice = "3800",
                 purchaseDate = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000, // 30 days ago
@@ -259,22 +228,14 @@ private fun AddHoldingScreenPreview_FormEdit() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - FormEntry State with errors", showBackground = true)
+@Preview(name = "Dark: AddHolding - FormEntry State with errors", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_FormWithErrors() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.FormEntry(
-                selectedCoin = Coin(
-                    id = "bitcoin",
-                    symbol = "BTC",
-                    name = "Bitcoin",
-                    image = "",
-                    currentPrice = 54231.12,
-                    priceChangePercentage24h = 2.5,
-                    marketCap = 1000000000L,
-                    marketCapRank = 1
-                ),
+                selectedCoin = getSampleBitcoinForForm(),
                 amount = "",
                 purchasePrice = "-100",
                 purchaseDate = System.currentTimeMillis(),
@@ -291,22 +252,14 @@ private fun AddHoldingScreenPreview_FormWithErrors() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - FormEntry State saving", showBackground = true)
+@Preview(name = "Dark: AddHolding - FormEntry State saving", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_FormSaving() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.FormEntry(
-                selectedCoin = Coin(
-                    id = "bitcoin",
-                    symbol = "BTC",
-                    name = "Bitcoin",
-                    image = "",
-                    currentPrice = 54231.12,
-                    priceChangePercentage24h = 2.5,
-                    marketCap = 1000000000L,
-                    marketCapRank = 1
-                ),
+                selectedCoin = getSampleBitcoinForForm(),
                 amount = "0.5",
                 purchasePrice = "48500",
                 purchaseDate = System.currentTimeMillis(),
@@ -322,22 +275,14 @@ private fun AddHoldingScreenPreview_FormSaving() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Light: AddHolding - FormEntry State save error", showBackground = true)
+@Preview(name = "Dark: AddHolding - FormEntry State save error", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun AddHoldingScreenPreview_FormSaveError() {
-    MaterialTheme {
+    HodlerTheme {
         AddHoldingScreen(
             uiState = AddHoldingUiState.FormEntry(
-                selectedCoin = Coin(
-                    id = "bitcoin",
-                    symbol = "BTC",
-                    name = "Bitcoin",
-                    image = "",
-                    currentPrice = 54231.12,
-                    priceChangePercentage24h = 2.5,
-                    marketCap = 1000000000L,
-                    marketCapRank = 1
-                ),
+                selectedCoin = getSampleBitcoinForForm(),
                 amount = "0.5",
                 purchasePrice = "48500",
                 purchaseDate = System.currentTimeMillis(),

@@ -1,5 +1,6 @@
 package com.luisd.hodler.presentation.ui.details
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,15 +22,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.details.components.CoinDetailCard
 import com.luisd.hodler.presentation.ui.details.components.CoinDetailChartSection
 import com.luisd.hodler.presentation.ui.details.components.CoinDetailStatsSection
 import com.luisd.hodler.presentation.ui.details.components.TimeRangeChips
+import com.luisd.hodler.presentation.ui.details.components.getSampleBitcoinDetail
+import com.luisd.hodler.presentation.ui.details.components.getSampleCoinWithNegativeChange
+import com.luisd.hodler.presentation.ui.details.components.getSampleCoinWithNullSupply
+import com.luisd.hodler.presentation.ui.details.components.getSampleEthereumDetail
+import com.luisd.hodler.presentation.ui.details.components.getSampleMarketChart24H
 
 @Composable
 fun CoinDetailRoute(
@@ -65,7 +74,13 @@ fun DetailScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = coinSymbol.uppercase()) },
+                title = {
+                    Text(
+                        text = coinSymbol.uppercase(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -81,15 +96,19 @@ fun DetailScreen(
             is CoinDetailUiState.Error -> {
                 ErrorContent(
                     message = state.message,
-                    paddingValues = paddingValues,
-                    onRefresh = { onRefresh() },
+                    onRefresh = onRefresh,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
                 )
             }
 
             CoinDetailUiState.Loading -> {
                 LoadingContent(
                     message = "Loading details...",
-                    paddingValues = paddingValues,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
                 )
             }
 
@@ -109,8 +128,9 @@ fun DetailScreen(
 
                     CoinDetailChartSection(
                         state = state.chartState,
-                        paddingValues = paddingValues,
-                        timeRange = state.timeRange
+                        timeRange = state.timeRange,
+                        modifier = Modifier
+                            .padding(paddingValues),
                     )
 
                     CoinDetailStatsSection(coinDetail = state.coinDetail)
@@ -134,5 +154,209 @@ fun DetailScreen(
                 }
             }
         }
+    }
+}
+
+// ============================================================
+// CoinDetailScreen Previews
+// ============================================================
+
+@Preview(name = "Light: Detail - Loading State", showBackground = true)
+@Preview(name = "Dark: Detail - Loading State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewDetailScreenLoading() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Loading,
+            coinSymbol = "BTC",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Error State", showBackground = true)
+@Preview(name = "Dark: Detail - Error State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewDetailScreenError() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Error("Failed to load coin details. Please check your connection."),
+            coinSymbol = "BTC",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Success with Chart Loading", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Success with Chart Loading",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenSuccessChartLoading() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleBitcoinDetail(),
+                chartState = ChartState.Loading,
+                timeRange = TimeRange.DAY_1
+            ),
+            coinSymbol = "BTC",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Success with Chart 24H", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Success with Chart 24H",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenSuccess24H() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleBitcoinDetail(),
+                chartState = ChartState.Success(getSampleMarketChart24H()),
+                timeRange = TimeRange.DAY_1
+            ),
+            coinSymbol = "BTC",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Success with Chart Error", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Success with Chart Error",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenSuccessChartError() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleBitcoinDetail(),
+                chartState = ChartState.Error("Failed to load chart data"),
+                timeRange = TimeRange.DAY_1
+            ),
+            coinSymbol = "BTC",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Coin with Positive Change", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Coin with Positive Change",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenEthereum() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleEthereumDetail(),
+                chartState = ChartState.Success(getSampleMarketChart24H()),
+                timeRange = TimeRange.DAY_7
+            ),
+            coinSymbol = "ETH",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Coin with Negative Change", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Coin with Negative Change",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenNegativeChange() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleCoinWithNegativeChange(),
+                chartState = ChartState.Success(getSampleMarketChart24H()),
+                timeRange = TimeRange.DAY_1
+            ),
+            coinSymbol = "ADA",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Coin with Null Supply Values", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Coin with Null Supply Values",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenNullSupply() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleCoinWithNullSupply(),
+                chartState = ChartState.Success(getSampleMarketChart24H()),
+                timeRange = TimeRange.DAY_30
+            ),
+            coinSymbol = "DOGE",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
+    }
+}
+
+@Preview(name = "Light: Detail - Long Coin Symbol\"", showBackground = true)
+@Preview(
+    name = "Dark: Detail - Long Coin Symbol",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+private fun PreviewDetailScreenLongSymbol() {
+    HodlerTheme {
+        DetailScreen(
+            state = CoinDetailUiState.Success(
+                coinDetail = getSampleBitcoinDetail(),
+                chartState = ChartState.Success(getSampleMarketChart24H()),
+                timeRange = TimeRange.DAY_1
+            ),
+            coinSymbol = "SUPERVERYLONGCOINEXAMPLEOVERFLOWTEST",
+            onRefresh = {},
+            onNavigateBack = {},
+            onSelectedTimeRangeChange = {},
+            onAddToPortfolio = {}
+        )
     }
 }

@@ -1,7 +1,9 @@
 package com.luisd.hodler.presentation.ui.market
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -17,22 +19,20 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luisd.hodler.domain.model.Coin
-import com.luisd.hodler.domain.model.Result
+import com.luisd.hodler.presentation.theme.HodlerTheme
 import com.luisd.hodler.presentation.ui.components.ErrorContent
 import com.luisd.hodler.presentation.ui.components.LoadingContent
 import com.luisd.hodler.presentation.ui.market.components.CoinList
+import com.luisd.hodler.presentation.ui.market.components.getSampleCoins
 
 @Composable
 fun MarketRoute(
@@ -82,15 +82,19 @@ fun MarketScreen(
                 is MarketUiState.Loading -> {
                     LoadingContent(
                         message = "Gathering coins...",
-                        paddingValues = paddingValues
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
                     )
                 }
 
                 is MarketUiState.Error -> {
                     ErrorContent(
                         message = uiState.message,
-                        paddingValues = paddingValues,
                         onRefresh = onRefresh,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
                     )
                 }
 
@@ -170,4 +174,61 @@ fun TopBar(
             }
         }
     )
+}
+
+// ============================================================
+// MarketScreen Previews
+// ============================================================
+
+@Preview(name = "Light: Market - Loading State", showBackground = true)
+@Preview(name = "Dark: Market - Loading State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewMarketScreenLoading() {
+    HodlerTheme {
+        MarketScreen(
+            outerPaddingValues = PaddingValues(0.dp),
+            uiState = MarketUiState.Loading,
+            onSearchQueryChange = {},
+            onSearchActiveChange = {},
+            onRefresh = {},
+            onCoinClick = { _, _ -> }
+        )
+    }
+}
+
+@Preview(name = "Light: Market - Error State", showBackground = true)
+@Preview(name = "Dark: Market - Error State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewMarketScreenError() {
+    HodlerTheme {
+        MarketScreen(
+            outerPaddingValues = PaddingValues(0.dp),
+            uiState = MarketUiState.Error("Network connection failed. Please try again."),
+            onSearchQueryChange = {},
+            onSearchActiveChange = {},
+            onRefresh = {},
+            onCoinClick = { _, _ -> }
+        )
+    }
+}
+
+@Preview(name = "Light: Market - Success State", showBackground = true)
+@Preview(name = "Dark: Market - Success State", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun PreviewMarketScreenSuccess() {
+    HodlerTheme {
+        MarketScreen(
+            outerPaddingValues = PaddingValues(0.dp),
+            uiState = MarketUiState.Success(
+                coins = getSampleCoins(),
+                searchQuery = "",
+                isSearchActive = false,
+                isRefreshing = false
+            ),
+            onSearchQueryChange = {},
+            onSearchActiveChange = {},
+            onRefresh = {},
+            onCoinClick = { _, _ -> }
+        )
+    }
 }

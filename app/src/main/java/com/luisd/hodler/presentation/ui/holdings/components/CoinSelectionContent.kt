@@ -28,22 +28,22 @@ import com.luisd.hodler.presentation.ui.util.toUsdFormat
 fun CoinSelectionContent(
     coins: List<Coin>,
     error: String?,
-    paddingValues: PaddingValues,
     onCoinSelected: (Coin) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (error != null) {
             ErrorContent(
                 message = error,
-                paddingValues = paddingValues,
-                onRefresh = null
+                onRefresh = null,
+                modifier = modifier
             )
         }
 
         if (coins.isEmpty() && error == null) {
             LoadingContent(
                 message = "Loading coins...",
-                paddingValues = paddingValues
+                modifier = modifier
             )
         } else {
             LazyColumn(

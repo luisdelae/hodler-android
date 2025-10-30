@@ -41,30 +41,31 @@ import kotlinx.coroutines.runBlocking
 @Composable
 fun CoinDetailChartSection(
     state: ChartState,
-    paddingValues: PaddingValues,
     timeRange: TimeRange,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
         when (state) {
             is ChartState.Error -> ErrorContent(
                 message = state.message,
-                paddingValues = paddingValues,
-                onRefresh = { },
+                onRefresh = null,
+                modifier = Modifier.fillMaxWidth()
             )
 
             ChartState.Loading -> LoadingContent(
                 message = "Loading market chart...",
-                paddingValues = paddingValues,
+                modifier = modifier.fillMaxWidth(),
             )
 
             is ChartState.Success -> {
                 CoinDetailLineChart(
                     data = state.chart,
                     timeRange = timeRange,
+                    modifier = modifier,
                 )
             }
         }
@@ -148,8 +149,9 @@ fun CoinDetailLineChart(
     if (data.prices.isEmpty()) {
         ErrorContent(
             message = "No data to display",
-            paddingValues = PaddingValues(0.dp)
-        ) { }
+            onRefresh = null,
+            modifier = modifier
+        )
         return
     }
 
@@ -196,8 +198,9 @@ fun CoinDetailLineChart(
     if (chartError != null) {
         ErrorContent(
             message = chartError!!,
-            paddingValues = PaddingValues(0.dp)
-        ) { }
+            onRefresh = null,
+            modifier = modifier
+        )
     } else {
         CoinDetailLineChartContent(
             modelProducer = modelProducer,
