@@ -21,6 +21,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel for the Portfolio screen that manages user's cryptocurrency holdings.
+ *
+ * Responsibilities:
+ * - Observes and transforms holdings with live prices into UI state
+ * - Aggregates individual holdings into portfolio-level summary statistics
+ * - Groups holdings by coin for organized display
+ * - Manages UI state for expandable coin groups
+ * - Handles holding deletion
+ *
+ * The ViewModel combines holdings data from the database with live/cached cryptocurrency prices
+ * to provide real-time portfolio valuation and profit/loss calculations.
+ *
+ * @property observePortfolioUseCase Use case that observes holdings and enriches them with current prices
+ * @property portfolioRepository Repository for portfolio CRUD operations
+ */
 @HiltViewModel
 class PortfolioViewModel @Inject constructor(
     private val observePortfolioUseCase: ObservePortfolioUseCase,
@@ -36,6 +52,22 @@ class PortfolioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * UI state flow representing the current portfolio state.
+     *
+     * Transforms holdings with prices into displayable UI state:
+     * - Loading: Initial state while fetching data
+     * - Empty: User has no holdings
+     * - Success: Holdings grouped by coin with aggregated summary
+     * - Error: Failed to load portfolio data
+     *
+     * The state combines:
+     * 1. Holdings data (from use case)
+     * 2. Expanded coin IDs (for UI expand/collapse state)
+     *
+     * State is shared across configuration changes and survives process death
+     * with 5-second stop timeout.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<PortfolioUiState> = refreshTrigger
         .flatMapLatest { observePortfolioUseCase() }
@@ -75,6 +107,12 @@ class PortfolioViewModel @Inject constructor(
             initialValue = PortfolioUiState.Loading
         )
 
+    /**
+     * Triggers a refresh of portfolio prices.
+     *
+     * Emits a refresh signal that causes the use case to re-fetch current cryptocurrency prices
+     * and recalculate all portfolio values. Used for manual refresh (pull-to-refresh).
+     */
     fun refreshPrices() {
         viewModelScope.launch {
             refreshTrigger.emit(Unit)
@@ -114,6 +152,12 @@ class PortfolioViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Groups individual holdings by cryptocurrency for organized display.
+     *
+     * @param holdings List of all individual holdings with prices
+     * @return List of CoinGroup, one per unique cryptocurrency held
+     */
     private fun combineHoldingsToGroup(holdings: List<HoldingWithPrice>): List<CoinGroup> {
         return holdings
             .groupBy { it.holding.coinId }
@@ -135,6 +179,12 @@ class PortfolioViewModel @Inject constructor(
             }
     }
 
+    /**
+     * Calculates profit/loss percentage for a group of holdings of the same coin.
+     *
+     * @param holdingsList List of holdings for a single cryptocurrency
+     * @return Profit/loss percentage relative to total cost basis, or 0.0 if cost basis is zero
+     */
     private fun calculateGroupPercent(holdingsList: List<HoldingWithPrice>): Double {
         val totalCostBasis = holdingsList.sumOf { it.costBasis }
         val totalCurrentValue = holdingsList.sumOf { it.currentValue }
@@ -146,12 +196,28 @@ class PortfolioViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Deletes a holding from the portfolio.
+     *
+     * Removes the holding from the database. The portfolio UI automatically updates
+     * via the reactive Flow when the deletion completes.
+     *
+     * @param id Unique identifier of the holding to delete
+     */
     fun deleteHolding(id: Long) {
         viewModelScope.launch {
             portfolioRepository.deleteHoldingById(id)
         }
     }
 
+    /**
+     * Toggles the expansion state of a coin group in the UI.
+     *
+     * When expanded, individual holdings within the group are visible.
+     * When collapsed, only the aggregated group summary is shown.
+     *
+     * @param coinId Unique identifier of the coin to expand/collapse
+     */
     fun toggleCoinExpansion(coinId: String) {
         expandedCoinIds.update { currentExpanded ->
             if (currentExpanded.contains(coinId)) {
@@ -163,6 +229,25 @@ class PortfolioViewModel @Inject constructor(
     }
 }
 
+/**
+ * Represents a group of holdings for a single cryptocurrency.
+ *
+ * Used to display aggregated information when a user has multiple purchases
+ * of the same coin. Shows combined totals while maintaining access to individual
+ * holding details.
+ *
+ * @property coinId Unique identifier for the cryptocurrency
+ * @property coinSymbol Trading symbol (e.g., "BTC", "ETH")
+ * @property coinName Full name of the cryptocurrency
+ * @property imageUrl URL to coin logo/icon
+ * @property totalAmount Total quantity held across all purchases
+ * @property averageCostBasis Weighted average purchase price per unit
+ * @property totalCurrentValue Combined current value of all holdings at current price
+ * @property totalProfitLoss Total profit/loss in USD (current value - total cost)
+ * @property totalProfitLossPercent Total profit/loss as percentage of cost basis
+ * @property holdings List of individual holdings for this coin
+ * @property holdingCount Number of separate purchases (derived from holdings.size)
+ */
 data class CoinGroup(
     val coinId: String,
     val coinSymbol: String,
