@@ -83,9 +83,9 @@ class CoinDetailViewModelTest {
     fun `initial state is loading then success`() = runTest {
         // Arrange
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Success(mockMarketChart))
+                Result.Success(mockMarketChart)
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -107,7 +107,7 @@ class CoinDetailViewModelTest {
         // Arrange
         val exception = Exception("Network error")
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Error(exception))
+                Result.Error(exception)
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -124,9 +124,9 @@ class CoinDetailViewModelTest {
     fun `successful chart load updates chart state`() = runTest {
         // Arrange
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Success(mockMarketChart))
+                Result.Success(mockMarketChart)
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -146,9 +146,9 @@ class CoinDetailViewModelTest {
     fun `chart error maintains coin detail success state`() = runTest {
         // Arrange
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Error(Exception("Chart error")))
+                Result.Error(Exception("Chart error"))
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -178,11 +178,11 @@ class CoinDetailViewModelTest {
         )
 
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Success(chart7d))
+                Result.Success(chart7d)
         coEvery { mockRepository.getMarketChart("bitcoin", 30) } returns
-                flowOf(Result.Success(chart30d))
+                Result.Success(chart30d)
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -202,9 +202,9 @@ class CoinDetailViewModelTest {
     fun `chart loading shows loading state while coin details remain visible`() = runTest {
         // Arrange
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Loading)
+                Result.Loading
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -236,13 +236,13 @@ class CoinDetailViewModelTest {
         )
 
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Success(mockMarketChart))
+                Result.Success(mockMarketChart)
         coEvery { mockRepository.getMarketChart("bitcoin", 1) } returns
-                flowOf(Result.Success(chart1d))
+                Result.Success(chart1d)
         coEvery { mockRepository.getMarketChart("bitcoin", any()) } returns
-                flowOf(Result.Success(chart1h))
+                Result.Success(chart1h)
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)
@@ -265,9 +265,9 @@ class CoinDetailViewModelTest {
     fun `coin symbol is accessible from viewModel`() = runTest {
         // Arrange
         coEvery { mockRepository.getCoinDetails("bitcoin") } returns
-                flowOf(Result.Success(mockCoinDetail))
+                Result.Success(mockCoinDetail)
         coEvery { mockRepository.getMarketChart("bitcoin", 7) } returns
-                flowOf(Result.Success(mockMarketChart))
+                Result.Success(mockMarketChart)
 
         // Act
         val viewModel = CoinDetailViewModel(mockRepository, savedStateHandle)

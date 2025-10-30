@@ -18,9 +18,6 @@ import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -104,7 +101,7 @@ class AddHoldingViewModelTest {
     fun `initial state is coin selection with loading`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns flow { awaitCancellation() }
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Loading
 
         // Act
         val viewModel = AddHoldingViewModel(
@@ -121,8 +118,11 @@ class AddHoldingViewModelTest {
     fun `loading coins successfully transitions to coin selection`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
 
         // Act
         val viewModel = AddHoldingViewModel(
@@ -141,8 +141,7 @@ class AddHoldingViewModelTest {
     fun `failing to load coins transitions to coin selection with error`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns
-                flowOf(Result.Error(Exception("Failed")))
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Error(Exception("Failed"))
 
         // Act
         val viewModel = AddHoldingViewModel(
@@ -163,7 +162,7 @@ class AddHoldingViewModelTest {
     fun `selecting coin transitions to form entry`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns flow { awaitCancellation() }
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Loading
 
         val viewModel = AddHoldingViewModel(
             coinRepository = mockCoinRepo,
@@ -188,7 +187,7 @@ class AddHoldingViewModelTest {
     fun `save with empty amount shows error`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns flow { awaitCancellation() }
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Loading
         val viewModel = AddHoldingViewModel(
             coinRepository = mockCoinRepo,
             portfolioRepository = mockPortfolioRepo,
@@ -213,7 +212,7 @@ class AddHoldingViewModelTest {
     fun `save with negative price shows error`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns flow { awaitCancellation() }
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Loading
         val viewModel = AddHoldingViewModel(
             coinRepository = mockCoinRepo,
             portfolioRepository = mockPortfolioRepo,
@@ -238,8 +237,12 @@ class AddHoldingViewModelTest {
     fun `save with valid data inserts holding`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns flow { awaitCancellation() }
-        coEvery { mockPortfolioRepo.insertHolding(any()) } returns Result.Success(1L)
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Loading
+        coEvery { mockPortfolioRepo.insertHolding(any()) } returns Result.Success(
+            data = 1L,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
 
         val viewModel = AddHoldingViewModel(
             coinRepository = mockCoinRepo,
@@ -269,7 +272,7 @@ class AddHoldingViewModelTest {
     fun `typing in field clears previous error`() = runTest {
         // Arrange
         setupAddMode()
-        coEvery { mockCoinRepo.getMarketCoins() } returns flow { awaitCancellation() }
+        coEvery { mockCoinRepo.getMarketCoins() } returns Result.Loading
 
         val viewModel = AddHoldingViewModel(
             coinRepository = mockCoinRepo,
@@ -295,7 +298,11 @@ class AddHoldingViewModelTest {
     fun `loading holding for edit transitions to form with pre-filled data`() = runTest {
         // Arrange
         setupEditMode(1L)
-        coEvery { mockPortfolioRepo.getHoldingById(1L) } returns Result.Success(mockHolding)
+        coEvery { mockPortfolioRepo.getHoldingById(1L) } returns Result.Success(
+            data = mockHolding,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
 
         // Act
         val viewModel = AddHoldingViewModel(
@@ -318,8 +325,16 @@ class AddHoldingViewModelTest {
     fun `save in edit mode calls updateHolding instead of insertHolding`() = runTest {
         // Arrange
         setupEditMode(1L)
-        coEvery { mockPortfolioRepo.getHoldingById(1L) } returns Result.Success(mockHolding)
-        coEvery { mockPortfolioRepo.updateHolding(any()) } returns Result.Success(Unit)
+        coEvery { mockPortfolioRepo.getHoldingById(1L) } returns Result.Success(
+            data = mockHolding,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
+        coEvery { mockPortfolioRepo.updateHolding(any()) } returns Result.Success(
+            data = Unit,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
 
         val viewModel = AddHoldingViewModel(
             coinRepository = mockCoinRepo,

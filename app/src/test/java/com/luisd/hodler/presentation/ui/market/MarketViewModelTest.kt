@@ -8,7 +8,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -65,35 +64,38 @@ class MarketViewModelTest {
     @Test
     fun `initial state shows loading then success`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
 
         // Act
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Assert
         viewModel.uiState.test {
-            assertTrue(awaitItem() is MarketUiState.Loading)
             val success = awaitItem() as MarketUiState.Success
             assertEquals(mockCoins, success.coins)
             assertEquals("", success.searchQuery)
             assertFalse(success.isSearchActive)
             assertFalse(success.isRefreshing)
+            assertFalse(success.isFromCache)
         }
     }
 
     @Test
     fun `loading coins returns error state`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Error(Exception("Network error")))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Error(Exception("Network error"))
 
         // Act
         val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
 
         // Assert
         viewModel.uiState.test {
-            assertTrue(awaitItem() is MarketUiState.Loading)
             val error = awaitItem() as MarketUiState.Error
             assertEquals("Network error", error.message)
         }
@@ -102,8 +104,11 @@ class MarketViewModelTest {
     @Test
     fun `search query filters coins by name`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -121,8 +126,11 @@ class MarketViewModelTest {
     @Test
     fun `search query filters coins by symbol`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -139,8 +147,11 @@ class MarketViewModelTest {
     @Test
     fun `search is case insensitive`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -157,8 +168,11 @@ class MarketViewModelTest {
     @Test
     fun `empty search query shows all coins`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -176,8 +190,11 @@ class MarketViewModelTest {
     @Test
     fun `search with no results returns empty list`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -194,8 +211,11 @@ class MarketViewModelTest {
     @Test
     fun `onSearchActiveChange clears query when deactivated`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -213,16 +233,20 @@ class MarketViewModelTest {
     @Test
     fun `refresh sets isRefreshing to true then false`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
         // Act & Assert
         viewModel.uiState.test {
-            skipItems(1) // Skip current success state
+            skipItems(1)
 
             viewModel.refresh()
+            advanceUntilIdle()
 
             val refreshingState = awaitItem() as MarketUiState.Success
             assertTrue(refreshingState.isRefreshing)
@@ -236,8 +260,11 @@ class MarketViewModelTest {
     @Test
     fun `refresh maintains search query and active state`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -259,8 +286,11 @@ class MarketViewModelTest {
     @Test
     fun `displayedCoins returns all coins when search query is blank`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -272,8 +302,11 @@ class MarketViewModelTest {
     @Test
     fun `displayedCoins filters when search query is set`() = runTest {
         // Arrange
-        coEvery { mockRepository.getMarketCoins() } returns
-                flowOf(Result.Success(mockCoins))
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = false,
+            lastUpdated = System.currentTimeMillis()
+        )
         val viewModel = MarketViewModel(mockRepository)
         advanceUntilIdle()
 
@@ -285,5 +318,24 @@ class MarketViewModelTest {
         val state = viewModel.uiState.value as MarketUiState.Success
         assertEquals(1, state.displayedCoins.size)
         assertEquals("ethereum", state.displayedCoins[0].id)
+    }
+
+    @Test
+    fun `cached data sets isFromCache to true`() = runTest {
+        // Arrange
+        coEvery { mockRepository.getMarketCoins() } returns Result.Success(
+            data = mockCoins,
+            isFromCache = true,
+            lastUpdated = System.currentTimeMillis() - 300000 // 5 min ago
+        )
+
+        // Act
+        val viewModel = MarketViewModel(mockRepository)
+        advanceUntilIdle()
+
+        // Assert
+        val state = viewModel.uiState.value as MarketUiState.Success
+        assertTrue(state.isFromCache)
+        assertEquals(mockCoins, state.coins)
     }
 }
