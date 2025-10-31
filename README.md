@@ -207,7 +207,7 @@ and gamification patterns without requiring real money or KYC compliance.
 - **Localization** - Multi-language support starting with Spanish
 - **Advanced Charts** - Technical indicators (MA, RSI, MACD)
 
-## 🤔 Architecture Decisions & Trade-offs
+## Architecture Decisions & Trade-offs
 
 ### Why Clean Architecture?
 **Pros:** Testable, scalable, framework-independent business logic  
@@ -269,11 +269,11 @@ and duplicate caching logic. If adding wallets/exchanges, those would warrant se
 Demonstrates ability to prioritize MVP features and ship working software under time constraints. 
 These features would be added iteratively based on user feedback and analytics, not upfront assumptions.
 
-## 📄 License
+## License
 
 This project is a portfolio demonstration and learning exercise. Not licensed for commercial use.
 
-## 👤 Author
+## Author
 
 **Luis De La Espriella**  
 [GitHub](https://github.com/luisdelae) • [LinkedIn](https://linkedin.com/in/luisdelaespriella)
