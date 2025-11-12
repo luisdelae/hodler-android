@@ -7,6 +7,17 @@
 Android cryptocurrency portfolio tracker demonstrating Clean Architecture, offline-first data 
 synchronization, and modern Android development practices.
 
+## Quick Start
+```bash
+git clone 
+git checkout main  # ← Always stable
+./gradlew assembleDebug
+```
+
+## Branches
+- `main` - Stable v1 (portfolio tracker) ← **You are here**
+- `develop-v2` - v2 in progress (trading simulator)
+
 ## Screenshots
 
 ![Market Screen](screenshots/market.png)
